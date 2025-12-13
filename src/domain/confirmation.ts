@@ -16,7 +16,6 @@ export function evaluateReportsAtLocation(all: Report[], loc: Location): Evaluat
   const key = siteKey(loc)
   const group = all.filter(r => siteKey(r.location) === key)
   const now = Date.now()
-  const byUserIds = new Set<string>()
   let score = 0
 
   // +1 per unique user reporting same location (no user id yet, treat each report as unique)
