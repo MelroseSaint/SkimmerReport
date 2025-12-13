@@ -322,6 +322,7 @@ function App() {
       );
 
       setReports((prev) => [...prev, newReport]);
+      setReportsOpen(true);
       setPanelOpen(false);
       setDescription('');
       setSelectedLocation(null);
@@ -466,10 +467,11 @@ function App() {
       </header>
 
       {/* Main Content */}
-      <main className="main-content" role="main">
+      <main className={`main-content ${navOpen ? 'nav-open' : ''}`} role="main">
         <aside className={`side-nav ${navOpen ? 'open' : ''}`}>
           <div className="side-nav-panel" id="primary-nav" role="navigation" aria-label="Primary">
             <div className="nav-list">
+              <button className="nav-link" aria-label="Hide menu" onClick={() => setNavOpen(false)}>✖ Hide menu</button>
               <a className="nav-link" href="/"><HomeIcon /> Home</a>
               <a className="nav-link" href="/privacy"><PrivacyIcon /> Privacy</a>
               {import.meta.env.VITE_SHOW_TEST_LINK === 'true' && (

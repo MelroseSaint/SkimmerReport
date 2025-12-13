@@ -643,10 +643,8 @@
 .nav-icon { width: 20px; height: 20px; }
 
 @media (min-width: 768px) {
-  .main-content { grid-template-columns: 240px 1fr; }
-  .side-nav { display: block; }
+  .main-content.nav-open { grid-template-columns: 240px 1fr; }
   .side-nav-panel { position: sticky; transform: none; top: 0; height: calc(100vh - 0px); }
-  .hamburger { display: none; }
 }
 .locations-panel {
   position: fixed;
