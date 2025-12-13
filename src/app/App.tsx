@@ -859,7 +859,7 @@ function App() {
       {reportsOpen && (
         <>
           <div className="panel-overlay" onClick={() => setReportsOpen(false)} aria-hidden="true" />
-          <ReportsList reports={reports} />
+          <ReportsList reports={reports} onClose={() => setReportsOpen(false)} />
         </>
       )}
       <footer className="footer" role="contentinfo">

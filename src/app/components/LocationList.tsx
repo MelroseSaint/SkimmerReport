@@ -13,12 +13,8 @@ function keyFor(loc: Location): SiteKey {
   return `${roundCoord(loc.latitude)},${roundCoord(loc.longitude)}`
 }
 
-function statusFor(countRecent: number, lastMs: number): string {
-  const now = Date.now()
-  const ageDays = (now - lastMs) / 86400000
-  if (countRecent >= 3) return 'Under Review'
-  if (ageDays > 30) return 'Resolved'
-  return 'Pending Action'
+function statusFor(items: Report[]): string {
+  return items.some(r => r.status === 'Confirmed') ? 'Confirmed' : 'Under Review'
 }
 
 interface Props {
@@ -41,8 +37,7 @@ export default function LocationList({ reports }: Props) {
     return Array.from(map.entries()).map(([k, v]) => {
       const count = v.items.length
       const last = v.items.reduce((m, r) => Math.max(m, new Date(r.timestamp).getTime()), 0)
-      const recentCount = v.items.filter(r => (Date.now() - new Date(r.timestamp).getTime()) < 7*86400000).length
-      const status = statusFor(recentCount, last)
+      const status = statusFor(v.items)
       const cached = addrCache[k] || {}
       return { key: k, loc: v.loc, count, last, status, name: cached.name || '', address: cached.formatted || '' }
     })

@@ -646,6 +646,9 @@
   .main-content.nav-open { grid-template-columns: 240px 1fr; }
   .side-nav-panel { position: sticky; transform: none; top: 0; height: calc(100vh - 0px); }
 }
+@media (max-width: 480px) {
+  .side-nav-panel { width: min(80vw, 320px); }
+}
 .locations-panel {
   position: fixed;
   top: 0;
@@ -707,5 +710,6 @@
 .reports-status { padding: 0.25rem 0.5rem; border-radius: 6px; background: var(--glass-bg); }
 
 @media (max-width: 768px) {
-  .reports-row { grid-template-columns: 1fr 1.5fr 1.2fr 1fr; }
+  .reports-row { grid-template-columns: 1fr 1.2fr 1fr; }
+  .reports-row .reports-cell:nth-child(2) { display: none; }
 }

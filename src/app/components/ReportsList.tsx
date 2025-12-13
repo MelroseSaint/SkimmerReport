@@ -3,19 +3,18 @@ import type { Report } from '../../domain/types'
 
 interface Props {
   reports: Report[]
+  onClose?: () => void
 }
 
-export default function ReportsList({ reports }: Props) {
+export default function ReportsList({ reports, onClose }: Props) {
   const [search, setSearch] = useState('')
   const [sortKey, setSortKey] = useState<'category'|'observation'|'date'|'status'>('date')
   const [sortDir, setSortDir] = useState<'asc'|'desc'>('desc')
 
   const rows = useMemo(() => {
-    const now = Date.now()
     return reports.map(r => {
       const lastMs = new Date(r.timestamp).getTime()
-      const ageDays = (now - lastMs) / 86400000
-      const status = ageDays < 7 ? 'Under Review' : ageDays > 30 ? 'Resolved' : 'Pending Action'
+      const status = r.status || 'Under Review'
       return { id: r.id, category: r.category, observation: r.observationType, date: lastMs, status, description: r.description || '' }
     })
   }, [reports])
@@ -51,6 +50,9 @@ export default function ReportsList({ reports }: Props) {
     <div className="reports-panel" role="dialog" aria-modal="true" aria-labelledby="reports-title">
       <div className="reports-header">
         <h2 id="reports-title">Reports</h2>
+        {onClose && (
+          <button onClick={onClose} aria-label="Close reports" className="nav-link">Close</button>
+        )}
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
