@@ -187,6 +187,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<string>('');
 
   // Form state
   const [category, setCategory] = useState<ReportCategory>('ATM');
@@ -194,6 +195,8 @@ function App() {
   const [description, setDescription] = useState('');
   const [manualLat, setManualLat] = useState<string>('');
   const [manualLon, setManualLon] = useState<string>('');
+  const [latError, setLatError] = useState<string>('');
+  const [lonError, setLonError] = useState<string>('');
   const [showHotspots, setShowHotspots] = useState(true);
   const [addrLine, setAddrLine] = useState('');
   const [addrCity, setAddrCity] = useState('');
@@ -207,12 +210,15 @@ function App() {
     const loadReports = async () => {
       try {
         setLoading(true);
+        setStatusMsg('Loading reports...');
         const data = await reportService.getReports();
         setReports(data);
         setError(null);
+        setStatusMsg('Reports loaded');
       } catch (err) {
         setError('Failed to load reports. Please try again.');
         console.error('Error loading reports:', err);
+        setStatusMsg('Load failed');
       } finally {
         setLoading(false);
       }
@@ -256,6 +262,7 @@ function App() {
     try {
       setSubmitting(true);
       setError(null);
+      setStatusMsg('Submitting report...');
 
       const newReport = await reportService.submitReport(
         selectedLocation,
@@ -268,9 +275,11 @@ function App() {
       setPanelOpen(false);
       setDescription('');
       setSelectedLocation(null);
+      setStatusMsg('Report submitted');
     } catch (err) {
       setError('Failed to submit report. Please try again.');
       console.error('Error submitting report:', err);
+      setStatusMsg('Submission failed');
     } finally {
       setSubmitting(false);
     }
@@ -301,6 +310,18 @@ function App() {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [panelOpen, handleClosePanel]);
 
+  useEffect(() => {
+    const v = parseFloat(manualLat);
+    if (manualLat && (isNaN(v) || v < -90 || v > 90)) setLatError('Latitude must be between -90 and 90');
+    else setLatError('');
+  }, [manualLat]);
+
+  useEffect(() => {
+    const v = parseFloat(manualLon);
+    if (manualLon && (isNaN(v) || v < -180 || v > 180)) setLonError('Longitude must be between -180 and 180');
+    else setLonError('');
+  }, [manualLon]);
+
   return (
     <div className="app-container">
       {/* Header */}
@@ -309,6 +330,13 @@ function App() {
           <ShieldIcon />
           <span className="header-title">SkimmerWatch</span>
         </div>
+        <nav className="top-nav" aria-label="Primary">
+          <a href="/" aria-label="Home">Home</a>
+          <a href="/privacy" aria-label="Privacy">Privacy</a>
+          {import.meta.env.VITE_SHOW_TEST_LINK === 'true' && (
+            <a href="/test" aria-label="Verify API">Verify API</a>
+          )}
+        </nav>
         <div className="header-actions">
           <button
             onClick={() => {
@@ -362,16 +390,34 @@ function App() {
           >
             Share Case Link
           </button>
-          {import.meta.env.VITE_SHOW_TEST_LINK === 'true' && (
-            <a href="/test" aria-label="Verify API" style={{ textDecoration: 'underline' }}>
-              Verify API
-            </a>
-          )}
         </div>
       </header>
 
       {/* Main Content */}
       <main className="main-content" role="main">
+        <div className="toolbar" role="group" aria-label="Filters">
+          <div className="time-filter">
+            {TIME_FILTERS.map((tf) => (
+              <button
+                key={tf.days}
+                className={timeFilter === tf.days ? 'active' : ''}
+                onClick={() => setTimeFilter(tf.days)}
+                aria-pressed={timeFilter === tf.days}
+                aria-label={`Filter by ${tf.label}`}
+              >
+                {tf.label}
+              </button>
+            ))}
+            <button
+              className={showHotspots ? 'active' : ''}
+              onClick={() => setShowHotspots((v) => !v)}
+              aria-pressed={showHotspots}
+              aria-label="Toggle hotspots"
+            >
+              Hotspots
+            </button>
+          </div>
+        </div>
         <div className="map-container">
           {loading ? (
             <div style={{
@@ -416,28 +462,7 @@ function App() {
             </MapContainer>
           )}
 
-          {/* Time Filter */}
-          <div className="time-filter" role="group" aria-label="Time filter">
-            {TIME_FILTERS.map((tf) => (
-              <button
-                key={tf.days}
-                className={timeFilter === tf.days ? 'active' : ''}
-                onClick={() => setTimeFilter(tf.days)}
-                aria-pressed={timeFilter === tf.days}
-                aria-label={`Filter by ${tf.label}`}
-              >
-                {tf.label}
-              </button>
-            ))}
-            <button
-              className={showHotspots ? 'active' : ''}
-              onClick={() => setShowHotspots((v) => !v)}
-              aria-pressed={showHotspots}
-              aria-label="Toggle hotspots"
-            >
-              Hotspots
-            </button>
-          </div>
+          
 
           {/* Risk Legend */}
           <div className="risk-legend" role="complementary" aria-label="Activity level legend">
@@ -488,20 +513,12 @@ function App() {
           </div>
 
           {error && (
-            <div style={{
-              padding: '0.75rem',
-              marginBottom: '1rem',
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid var(--color-danger)',
-              borderRadius: '8px',
-              color: 'var(--color-danger)',
-              fontSize: '0.875rem'
-            }} role="alert">
+            <div className="alert" role="alert">
               {error}
             </div>
           )}
 
-          <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>
+          <p className="helper-text" style={{ marginBottom: '1rem' }}>
             {selectedLocation
               ? 'Location selected. Choose observation details below.'
               : 'Tap on the map to select an approximate location.'}
@@ -539,7 +556,7 @@ function App() {
 
           <div className="form-group">
             <label htmlFor="manual-location">Approximate location (optional)</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '0.5rem' }} id="manual-location">
+            <div className="grid grid-manual gap-sm" id="manual-location">
               <input
                 type="number"
                 inputMode="decimal"
@@ -549,6 +566,7 @@ function App() {
                 aria-label="Latitude"
                 step="0.0001"
               />
+              {latError && <p className="helper-text" role="alert">{latError}</p>}
               <input
                 type="number"
                 inputMode="decimal"
@@ -558,6 +576,7 @@ function App() {
                 aria-label="Longitude"
                 step="0.0001"
               />
+              {lonError && <p className="helper-text" role="alert">{lonError}</p>}
               <button
                 onClick={() => {
                   const lat = parseFloat(manualLat);
@@ -569,6 +588,7 @@ function App() {
                   }
                 }}
                 aria-label="Use typed coordinates"
+                disabled={Boolean(latError || lonError) || !(manualLat && manualLon)}
               >
                 Set
               </button>
@@ -595,7 +615,7 @@ function App() {
           </div>
           <div className="form-group">
             <label htmlFor="address-entry">Address (optional; used to approximate zone)</label>
-            <div id="address-entry" style={{ display: 'grid', gap: '0.5rem' }}>
+            <div id="address-entry" className="grid gap-sm">
               <input
                 type="text"
                 placeholder="Street address"
@@ -604,7 +624,7 @@ function App() {
                 aria-label="Street address"
                 autoComplete="address-line1"
               />
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '0.5rem' }}>
+              <div className="grid grid-addr-line gap-sm">
                 <input
                   type="text"
                   placeholder="City"
@@ -663,7 +683,7 @@ function App() {
                 Use Address
               </button>
             </div>
-            <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '0.25rem' }}>
+            <p className="helper-text">
               Address is converted to an approximate zone; exact location is not stored.
             </p>
           </div>
@@ -680,15 +700,17 @@ function App() {
             />
           </div>
 
-          <button
-            className="primary"
-            style={{ width: '100%', marginTop: '0.5rem' }}
-            onClick={handleSubmitReport}
-            disabled={!selectedLocation || submitting}
-            aria-busy={submitting}
-          >
-            {submitting ? 'Submitting...' : 'Submit Observation'}
-          </button>
+          <div className="sticky-actions">
+            <div aria-live="polite" role="status" className="helper-text">{statusMsg}</div>
+            <button
+              className="primary"
+              onClick={handleSubmitReport}
+              disabled={!selectedLocation || submitting}
+              aria-busy={submitting}
+            >
+              {submitting ? 'Submitting...' : 'Submit Observation'}
+            </button>
+          </div>
 
           <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '1rem', textAlign: 'center' }}>
             This is an unverified user observation. No accusations are made.
@@ -696,9 +718,9 @@ function App() {
         </div>
       </main>
       <footer className="footer" role="contentinfo">
-        Developed by DarkStackStudios Inc. ·
-        <a href="https://darkstackstudiosinc.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>
-          darkstackstudiosinc.vercel.app
+        Developed by {import.meta.env.VITE_BRAND_NAME || 'SaintLabs'} ·
+        <a href={import.meta.env.VITE_BRAND_URL || 'https://github.com/MelroseSaint'} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>
+          {import.meta.env.VITE_BRAND_URL || 'https://github.com/MelroseSaint'}
         </a>
         {' '}· <a href="/privacy" style={{ color: 'inherit' }}>Privacy</a>
       </footer>

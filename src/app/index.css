@@ -1,24 +1,35 @@
 :root {
   --font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  
-  /* Color Palette - Cyber/Dark Theme */
   --color-bg-primary: #0f1115;
   --color-bg-secondary: #1a1d23;
-  --color-accent: #3b82f6; /* Electric Blue */
-  --color-accent-glow: rgba(59, 130, 246, 0.5);
+  --color-surface: #16181d;
+  --color-accent: #2563eb;
   --color-text-primary: #ffffff;
   --color-text-secondary: #a1a1aa;
-  
   --color-danger: #ef4444;
   --color-warning: #f59e0b;
   --color-success: #10b981;
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: 4px;
+  --transition-speed: 0.2s;
 
-  /* Glassmorphism */
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-blur: 10px;
+  /* Spacing Scale (8px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
 
-  --transition-speed: 0.3s;
+  /* Typography Scale */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
 }
 
 * {
@@ -57,11 +68,11 @@ body {
 button {
   border-radius: 8px;
   border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--font-size-md);
   font-weight: 500;
   font-family: inherit;
-  background-color: var(--color-bg-secondary);
+  background-color: var(--color-surface);
   color: var(--color-text-primary);
   cursor: pointer;
   transition: border-color 0.25s, background-color 0.25s, transform 0.15s;
@@ -83,12 +94,12 @@ button:focus-visible {
 }
 
 button.primary {
-  background: linear-gradient(135deg, var(--color-accent), #2563eb);
-  border-color: transparent;
+  background: var(--color-accent);
+  color: #fff;
 }
 
 button.primary:hover {
-  background: linear-gradient(135deg, #60a5fa, var(--color-accent));
+  filter: brightness(1.05);
 }
 
 /* Scrollbar */
@@ -109,4 +120,19 @@ button.primary:hover {
 /* Leaflet Map Overrides */
 .leaflet-container {
   background: var(--color-bg-primary) !important;
+}
+
+/* Layout Utilities */
+.grid { display: grid; }
+.gap-sm { gap: var(--space-2); }
+.gap-md { gap: var(--space-3); }
+.gap-lg { gap: var(--space-4); }
+.grid-manual { grid-template-columns: 1fr 1fr auto; }
+.grid-addr-line { grid-template-columns: 2fr 1fr 1fr; }
+.helper-text { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-top: var(--space-1); }
+.alert { padding: var(--space-3); margin-bottom: var(--space-4); background: rgba(239, 68, 68, 0.12); border: 1px solid var(--color-danger); border-radius: 8px; color: var(--color-danger); font-size: var(--font-size-sm); }
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }

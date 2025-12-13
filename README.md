@@ -81,6 +81,8 @@ VITE_USE_API=true|false
 VITE_SHOW_TEST_LINK=true|false
 VITE_NOMINATIM_URL=https://nominatim.openstreetmap.org/search
 VITE_OSM_TILE_URL=https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+VITE_BRAND_NAME=Your Studio Name
+VITE_BRAND_URL=https://your-studio.example.com
 ```
 
 
