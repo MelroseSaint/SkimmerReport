@@ -131,6 +131,35 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.panel-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--overlay-bg);
+  z-index: 1000;
+}
+
+.poi-list {
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: var(--color-bg-secondary);
+  max-height: 240px;
+  overflow: auto;
+}
+
+.poi-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.poi-item:last-child { border-bottom: none; }
+
+.poi-item button { margin-left: var(--space-3); }
+
+.empty-state { padding: var(--space-3); color: var(--color-text-secondary); }
+
 .report-panel.open {
   transform: translateY(0);
 }

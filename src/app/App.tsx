@@ -24,6 +24,7 @@ import { ReportServiceHttp } from '../services/ReportServiceHttp';
 import { ReportServiceHybrid } from '../services/ReportServiceHybrid';
 import jsPDF from 'jspdf';
 import { geocodeAddress, suggestAddresses } from '../services/GeocodingService';
+import { queryNearbyPOIs, type POIResult } from '../services/OverpassService';
 
 // Icons as inline SVGs
 const ShieldIcon = memo(() => (
@@ -204,6 +205,9 @@ function App() {
   const [addrZip, setAddrZip] = useState('');
   const [addrSuggestions, setAddrSuggestions] = useState<{ label: string; location: Location }[]>([]);
   const [addressHintActive, setAddressHintActive] = useState(false);
+  const [nearbyPOIs, setNearbyPOIs] = useState<POIResult[]>([]);
+  const [poiLoading, setPoiLoading] = useState(false);
+  
 
   // Load reports with error handling
   useEffect(() => {
@@ -254,6 +258,12 @@ function App() {
     setSelectedLocation(loc);
     setPanelOpen(true);
     setAddressHintActive(false);
+    (async () => {
+      setPoiLoading(true);
+      const results = await queryNearbyPOIs(loc, 600);
+      setNearbyPOIs(results);
+      setPoiLoading(false);
+    })();
   }, []);
 
   const handleSubmitReport = useCallback(async () => {
@@ -497,6 +507,7 @@ function App() {
         </div>
 
         {/* Report Panel */}
+        {panelOpen && <div className="panel-overlay" onClick={handleClosePanel} aria-hidden="true" />}
         <div
           className={`report-panel ${panelOpen ? 'open' : ''}`}
           role="dialog"
@@ -588,6 +599,12 @@ function App() {
                     const loc: Location = { latitude: lat, longitude: lon };
                     setSelectedLocation(loc);
                     setAddressHintActive(false);
+                    (async () => {
+                      setPoiLoading(true);
+                      const results = await queryNearbyPOIs(loc, 600);
+                      setNearbyPOIs(results);
+                      setPoiLoading(false);
+                    })();
                   }
                 }}
                 aria-label="Use typed coordinates"
@@ -677,6 +694,10 @@ function App() {
                     setSelectedLocation(location);
                     setCenter([location.latitude, location.longitude]);
                     setAddressHintActive(true);
+                    setPoiLoading(true);
+                    const results = await queryNearbyPOIs(location, 600);
+                    setNearbyPOIs(results);
+                    setPoiLoading(false);
                   } else {
                     setError('Address not found. Please refine your entry or use map/coordinates.');
                   }
@@ -689,6 +710,40 @@ function App() {
             <p className="helper-text">
               Address is converted to an approximate zone; exact location is not stored.
             </p>
+
+            <div className="form-group">
+              <label>Nearby places (within ~600m)</label>
+              <div className="poi-list" aria-live="polite">
+                {poiLoading && <div className="empty-state">Searching nearby places...</div>}
+                {!poiLoading && nearbyPOIs.length === 0 && (
+                  <div className="empty-state">No nearby stores detected. You can tap on the map to choose a place.</div>
+                )}
+                {!poiLoading && nearbyPOIs.slice(0, 12).map((p) => {
+                  const name = p.tags?.name || p.tags?.brand || p.tags?.operator || 'Unnamed place';
+                  const type = p.tags?.amenity || p.tags?.shop || 'poi';
+                  return (
+                    <div key={`${p.type}-${p.id}`} className="poi-item">
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{name}</div>
+                        <div className="helper-text">{type}</div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const loc: Location = { latitude: p.lat, longitude: p.lon };
+                          setSelectedLocation(loc);
+                          setCenter([loc.latitude, loc.longitude]);
+                          setAddressHintActive(true);
+                        }}
+                        aria-label={`Use ${name} as report location`}
+                      >
+                        Select
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="helper-text">Not seeing it? Tap on the map and choose the nearest place.</p>
+            </div>
           </div>
 
           <div className="form-group">

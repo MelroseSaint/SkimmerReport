@@ -13,6 +13,7 @@
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-blur: 4px;
   --transition-speed: 0.2s;
+  --overlay-bg: rgba(0,0,0,0.45);
 
   /* Spacing Scale (8px grid) */
   --space-1: 4px;
