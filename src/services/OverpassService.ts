@@ -39,6 +39,8 @@ export async function queryNearbyPOIs(
       node["amenity"="atm"];
       node["amenity"="fuel"];
       node["amenity"="bank"];
+      node["shop"="supermarket"];
+      node["shop"="convenience"];
       node["shop"];
     );
     out body;

@@ -50,6 +50,41 @@ const XIcon = memo(() => (
 ));
 XIcon.displayName = 'XIcon';
 
+const MenuIcon = memo(() => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="nav-icon">
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+));
+MenuIcon.displayName = 'MenuIcon';
+
+const HomeIcon = memo(() => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="nav-icon">
+    <path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    <polyline points="9 22 9 12 15 12 15 22" />
+  </svg>
+));
+HomeIcon.displayName = 'HomeIcon';
+
+const PrivacyIcon = memo(() => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="nav-icon">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </svg>
+));
+PrivacyIcon.displayName = 'PrivacyIcon';
+
+const ApiIcon = memo(() => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="nav-icon">
+    <circle cx="12" cy="12" r="3" />
+    <line x1="19" y1="12" x2="22" y2="12" />
+    <line x1="2" y1="12" x2="5" y2="12" />
+    <line x1="12" y1="5" x2="12" y2="2" />
+    <line x1="12" y1="22" x2="12" y2="19" />
+  </svg>
+));
+ApiIcon.displayName = 'ApiIcon';
+
 // Initialize services (singleton pattern for scalability)
 const repository = new InMemoryReportRepository();
 const useApi = import.meta.env.VITE_USE_API === 'true';
@@ -182,6 +217,7 @@ LocationFinder.displayName = 'LocationFinder';
 function App() {
   const [reports, setReports] = useState<Report[]>([]);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const [center, setCenter] = useState<[number, number]>([40.7128, -74.006]);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [timeFilter, setTimeFilter] = useState(30);
@@ -314,11 +350,14 @@ function App() {
       if (e.key === 'Escape' && panelOpen) {
         handleClosePanel();
       }
+      if (e.key === 'Escape' && navOpen) {
+        setNavOpen(false);
+      }
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [panelOpen, handleClosePanel]);
+  }, [panelOpen, handleClosePanel, navOpen]);
 
   useEffect(() => {
     const v = parseFloat(manualLat);
@@ -343,6 +382,15 @@ function App() {
             Developed by <a href={import.meta.env.VITE_BRAND_URL || 'https://darkstackstudiosinc.vercel.app/'} target="_blank" rel="noopener noreferrer">{import.meta.env.VITE_BRAND_NAME || 'DarkStackStudios Inc.'}</a>
           </span>
         </div>
+        <button
+          className="hamburger"
+          aria-label="Open navigation"
+          aria-expanded={navOpen}
+          aria-controls="primary-nav"
+          onClick={() => setNavOpen((v) => !v)}
+        >
+          <MenuIcon />
+        </button>
         <nav className="top-nav" aria-label="Primary">
           <a href="/" aria-label="Home">Home</a>
           <a href="/privacy" aria-label="Privacy">Privacy</a>
@@ -408,6 +456,18 @@ function App() {
 
       {/* Main Content */}
       <main className="main-content" role="main">
+        <aside className={`side-nav ${navOpen ? 'open' : ''}`}>
+          <div className="side-nav-panel" id="primary-nav" role="navigation" aria-label="Primary">
+            <div className="nav-list">
+              <a className="nav-link" href="/"><HomeIcon /> Home</a>
+              <a className="nav-link" href="/privacy"><PrivacyIcon /> Privacy</a>
+              {import.meta.env.VITE_SHOW_TEST_LINK === 'true' && (
+                <a className="nav-link" href="/test"><ApiIcon /> Verify API</a>
+              )}
+            </div>
+          </div>
+        </aside>
+        {navOpen && <div className="nav-overlay" onClick={() => setNavOpen(false)} aria-hidden="true" />}
         <div className="toolbar" role="group" aria-label="Filters">
           <div className="time-filter">
             {TIME_FILTERS.map((tf) => (

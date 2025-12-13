@@ -38,4 +38,10 @@ export default defineConfig({
     strictPort: false,
     host: true,
   },
+
+  test: {
+    environment: 'jsdom',
+    setupFiles: [],
+    css: false,
+  },
 })
