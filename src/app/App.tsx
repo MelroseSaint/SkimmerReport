@@ -329,6 +329,9 @@ function App() {
         <div className="header-logo">
           <ShieldIcon />
           <span className="header-title">SkimmerWatch</span>
+          <span className="brand-badge">
+            Developed by <a href={import.meta.env.VITE_BRAND_URL || 'https://darkstackstudiosinc.vercel.app/'} target="_blank" rel="noopener noreferrer">{import.meta.env.VITE_BRAND_NAME || 'DarkStackStudios Inc.'}</a>
+          </span>
         </div>
         <nav className="top-nav" aria-label="Primary">
           <a href="/" aria-label="Home">Home</a>
