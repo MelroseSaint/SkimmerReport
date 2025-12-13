@@ -389,6 +389,7 @@ function App() {
           aria-label="Open navigation"
           aria-expanded={navOpen}
           aria-controls="primary-nav"
+          aria-haspopup="menu"
           onClick={() => setNavOpen((v) => !v)}
         >
           <MenuIcon />

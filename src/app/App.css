@@ -300,6 +300,7 @@
 }
 
 @media (max-width: 768px) {
+  .top-nav { display: none; }
   .footer {
     left: 0.75rem;
     bottom: 0.75rem;
@@ -592,6 +593,8 @@
   display: none;
 }
 
+.side-nav.open { display: block; }
+
 .hamburger {
   display: inline-flex;
   align-items: center;
@@ -601,6 +604,8 @@
   border: none;
   background: transparent;
   color: var(--color-text-primary);
+  cursor: pointer;
+  z-index: 1101;
 }
 
 .nav-overlay {
@@ -608,7 +613,7 @@
   position: fixed;
   inset: 0;
   background: var(--overlay-bg);
-  z-index: 1000;
+  z-index: 1100;
 }
 
 .side-nav.open + .nav-overlay { display: block; }
@@ -623,7 +628,7 @@
   border-right: 1px solid var(--glass-border);
   transform: translateX(-100%);
   transition: transform var(--transition-speed);
-  z-index: 1001;
+  z-index: 1102;
   padding: var(--space-4);
   display: flex;
   flex-direction: column;
