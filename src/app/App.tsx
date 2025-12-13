@@ -26,6 +26,7 @@ import jsPDF from 'jspdf';
 import { geocodeAddress, suggestAddresses } from '../services/GeocodingService';
 import { queryNearbyPOIs, type POIResult } from '../services/OverpassService';
 import LocationList from './components/LocationList'
+import ReportsList from './components/ReportsList'
 
 // Icons as inline SVGs
 const ShieldIcon = memo(() => (
@@ -220,6 +221,7 @@ function App() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [locationsOpen, setLocationsOpen] = useState(false);
+  const [reportsOpen, setReportsOpen] = useState(false);
   const [center, setCenter] = useState<[number, number]>([40.7128, -74.006]);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [timeFilter, setTimeFilter] = useState(30);
@@ -355,11 +357,17 @@ function App() {
       if (e.key === 'Escape' && navOpen) {
         setNavOpen(false);
       }
+      if (e.key === 'Escape' && locationsOpen) {
+        setLocationsOpen(false);
+      }
+      if (e.key === 'Escape' && reportsOpen) {
+        setReportsOpen(false);
+      }
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [panelOpen, handleClosePanel, navOpen]);
+  }, [panelOpen, handleClosePanel, navOpen, locationsOpen, reportsOpen]);
 
   useEffect(() => {
     const v = parseFloat(manualLat);
@@ -468,6 +476,7 @@ function App() {
                 <a className="nav-link" href="/test"><ApiIcon /> Verify API</a>
               )}
               <button className="nav-link" aria-label="Open locations list" onClick={() => { setLocationsOpen(true); setNavOpen(false); }}>📍 Locations</button>
+              <button className="nav-link" aria-label="Open reports list" onClick={() => { setReportsOpen(true); setNavOpen(false); }}>🗂️ Reports</button>
             </div>
           </div>
         </aside>
@@ -843,6 +852,12 @@ function App() {
         <>
           <div className="panel-overlay" onClick={() => setLocationsOpen(false)} aria-hidden="true" />
           <LocationList reports={reports} />
+        </>
+      )}
+      {reportsOpen && (
+        <>
+          <div className="panel-overlay" onClick={() => setReportsOpen(false)} aria-hidden="true" />
+          <ReportsList reports={reports} />
         </>
       )}
       <footer className="footer" role="contentinfo">
