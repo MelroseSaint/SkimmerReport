@@ -1,0 +1,112 @@
+:root {
+  --font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  
+  /* Color Palette - Cyber/Dark Theme */
+  --color-bg-primary: #0f1115;
+  --color-bg-secondary: #1a1d23;
+  --color-accent: #3b82f6; /* Electric Blue */
+  --color-accent-glow: rgba(59, 130, 246, 0.5);
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #a1a1aa;
+  
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+  --color-success: #10b981;
+
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 10px;
+
+  --transition-speed: 0.3s;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Utilities */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s, transform 0.15s;
+}
+
+button:hover {
+  border-color: var(--color-accent);
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+button.primary {
+  background: linear-gradient(135deg, var(--color-accent), #2563eb);
+  border-color: transparent;
+}
+
+button.primary:hover {
+  background: linear-gradient(135deg, #60a5fa, var(--color-accent));
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-secondary);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+/* Leaflet Map Overrides */
+.leaflet-container {
+  background: var(--color-bg-primary) !important;
+}

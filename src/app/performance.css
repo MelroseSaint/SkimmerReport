@@ -1,0 +1,69 @@
+/* Additional Performance & Mobile Optimizations */
+
+/* Prevent text size adjustment on orientation change */
+html {
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* Improve tap highlight */
+* {
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Smooth scrolling for better UX */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Disable smooth scrolling for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/* Loading skeleton for better perceived performance */
+.skeleton {
+    background: linear-gradient(90deg,
+            var(--color-bg-secondary) 25%,
+            rgba(255, 255, 255, 0.05) 50%,
+            var(--color-bg-secondary) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Optimize font rendering */
+body {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'kern' 1;
+}
+
+/* Prevent layout shift from scrollbar */
+html {
+    overflow-y: scroll;
+}
+
+/* Better focus visibility for accessibility */
+:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+/* Hide focus outline for mouse users */
+:focus:not(:focus-visible) {
+    outline: none;
+}
