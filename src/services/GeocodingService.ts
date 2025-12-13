@@ -73,3 +73,38 @@ export async function suggestAddresses(q: string, limit: number = 5): Promise<Ad
   }
   return [];
 }
+
+export interface ReverseGeocodeResult {
+  name?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  postcode?: string;
+  country?: string;
+  formatted?: string;
+}
+
+export async function reverseGeocode(loc: Location): Promise<ReverseGeocodeResult | null> {
+  const url = new URL('https://nominatim.openstreetmap.org/reverse');
+  url.searchParams.set('lat', String(loc.latitude));
+  url.searchParams.set('lon', String(loc.longitude));
+  url.searchParams.set('format', 'jsonv2');
+  url.searchParams.set('addressdetails', '1');
+  url.searchParams.set('accept-language', 'en');
+  try {
+    const res = await fetch(url.toString(), { headers: { 'User-Agent': 'SkimmerWatch/0.1 (anonymous)' } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const a = data.address || {};
+    const name = data.name || data.display_name?.split(',')?.[0];
+    const street = a.road || a.pedestrian || a.house_number ? [a.house_number, a.road].filter(Boolean).join(' ') : undefined;
+    const city = a.city || a.town || a.village || a.hamlet;
+    const state = a.state || a.region;
+    const postcode = a.postcode;
+    const country = a.country;
+    const formatted = [street, city, state, postcode].filter(Boolean).join(', ');
+    return { name, street, city, state, postcode, country, formatted };
+  } catch {
+    return null;
+  }
+}

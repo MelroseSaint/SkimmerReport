@@ -643,3 +643,40 @@
   .side-nav-panel { position: sticky; transform: none; top: 0; height: calc(100vh - 0px); }
   .hamburger { display: none; }
 }
+.locations-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(720px, 100vw);
+  background: var(--color-surface);
+  border-left: 1px solid var(--glass-border);
+  z-index: 1002;
+  padding: var(--space-4);
+  overflow: auto;
+}
+
+.locations-header { display: flex; gap: var(--space-3); align-items: center; justify-content: space-between; }
+.locations-header input { flex: 1; padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid var(--glass-border); }
+
+.locations-table { display: grid; gap: var(--space-2); }
+.locations-row { border: 1px solid var(--glass-border); border-radius: 8px; background: var(--color-bg-secondary); }
+.locations-head { display: grid; grid-template-columns: 2fr 3fr 1fr 1.5fr 1.5fr; padding: var(--space-2); background: var(--glass-bg); position: sticky; top: 0; z-index: 1; }
+.locations-cell { text-align: left; background: transparent; border: none; color: var(--color-text-primary); }
+
+.locations-summary { display: grid; grid-template-columns: 1fr auto; gap: var(--space-2); padding: var(--space-3); }
+.locations-summary-main { display: flex; flex-direction: column; gap: 2px; }
+.locations-summary-stats { display: grid; grid-template-columns: 60px 120px 140px; gap: var(--space-2); align-items: center; }
+.locations-name { font-weight: 600; }
+.locations-address { color: var(--color-text-secondary); font-size: 0.9rem; }
+.locations-count { font-weight: 600; }
+.locations-status { padding: 0.25rem 0.5rem; border-radius: 6px; background: var(--glass-bg); }
+.priority-high .locations-count { color: var(--color-danger); }
+
+.locations-details { padding: var(--space-3); }
+.locations-details ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+
+@media (max-width: 768px) {
+  .locations-head { grid-template-columns: 1fr 2fr 1fr 1fr 1.2fr; }
+  .locations-summary-stats { grid-template-columns: 48px 100px 120px; }
+}

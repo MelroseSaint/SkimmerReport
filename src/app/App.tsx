@@ -25,6 +25,7 @@ import { ReportServiceHybrid } from '../services/ReportServiceHybrid';
 import jsPDF from 'jspdf';
 import { geocodeAddress, suggestAddresses } from '../services/GeocodingService';
 import { queryNearbyPOIs, type POIResult } from '../services/OverpassService';
+import LocationList from './components/LocationList'
 
 // Icons as inline SVGs
 const ShieldIcon = memo(() => (
@@ -218,6 +219,7 @@ function App() {
   const [reports, setReports] = useState<Report[]>([]);
   const [panelOpen, setPanelOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [locationsOpen, setLocationsOpen] = useState(false);
   const [center, setCenter] = useState<[number, number]>([40.7128, -74.006]);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [timeFilter, setTimeFilter] = useState(30);
@@ -464,6 +466,7 @@ function App() {
               {import.meta.env.VITE_SHOW_TEST_LINK === 'true' && (
                 <a className="nav-link" href="/test"><ApiIcon /> Verify API</a>
               )}
+              <button className="nav-link" aria-label="Open locations list" onClick={() => { setLocationsOpen(true); setNavOpen(false); }}>📍 Locations</button>
             </div>
           </div>
         </aside>
@@ -835,6 +838,12 @@ function App() {
           </p>
         </div>
       </main>
+      {locationsOpen && (
+        <>
+          <div className="panel-overlay" onClick={() => setLocationsOpen(false)} aria-hidden="true" />
+          <LocationList reports={reports} />
+        </>
+      )}
       <footer className="footer" role="contentinfo">
         Developed by {import.meta.env.VITE_BRAND_NAME || 'SaintLabs'} ·
         <a href={import.meta.env.VITE_BRAND_URL || 'https://github.com/MelroseSaint'} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>
