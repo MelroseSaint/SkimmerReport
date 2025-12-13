@@ -4,6 +4,11 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/((?!api).*)", "destination": "/index.html" }
-  ]
+  ],
+  "env": {
+    "VITE_USE_API": "true",
+    "VITE_SHOW_TEST_LINK": "false",
+    "VITE_NOMINATIM_URL": "https://nominatim.openstreetmap.org/search",
+    "VITE_OSM_TILE_URL": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  }
 }
-
