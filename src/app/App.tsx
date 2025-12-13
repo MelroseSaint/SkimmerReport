@@ -21,6 +21,7 @@ import { generateHotspots } from '../domain/hotspot';
 import { InMemoryReportRepository } from '../infrastructure/InMemoryReportRepository';
 import { ReportService } from '../services/ReportService';
 import { ReportServiceHttp } from '../services/ReportServiceHttp';
+import { ReportServiceHybrid } from '../services/ReportServiceHybrid';
 import jsPDF from 'jspdf';
 import { geocodeAddress, suggestAddresses } from '../services/GeocodingService';
 
@@ -51,7 +52,9 @@ XIcon.displayName = 'XIcon';
 // Initialize services (singleton pattern for scalability)
 const repository = new InMemoryReportRepository();
 const useApi = import.meta.env.VITE_USE_API === 'true';
-const reportService = useApi ? new ReportServiceHttp() : new ReportService(repository);
+const memService = new ReportService(repository);
+const httpService = new ReportServiceHttp();
+const reportService = useApi ? new ReportServiceHybrid(httpService, memService) : memService;
 
 const CATEGORIES: ReportCategory[] = ['ATM', 'Gas pump', 'Store POS'];
 const OBSERVATION_TYPES: ObservationType[] = [
