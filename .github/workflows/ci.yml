@@ -49,3 +49,12 @@ jobs:
         run: npm run test -- --ci --reporter=dot
         env:
           CI: true
+
+      - name: Upload coverage artifacts
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.os }}-${{ matrix.node }}
+          path: |
+            coverage
+            coverage/lcov.info
