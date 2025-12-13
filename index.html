@@ -11,8 +11,8 @@
 
   <!-- SEO & Description -->
   <meta name="description"
-    content="SkimmerWatch - Community-driven, anonymous reporting platform for suspected payment card skimming activity." />
-  <meta name="keywords" content="skimmer, card skimming, fraud prevention, security, anonymous reporting" />
+    content="Confirmed card skimmer reports near you. Community-sourced safety signals for ATMs, gas pumps, and POS devices." />
+  <link rel="canonical" href="/" />
 
   <!-- PWA & Mobile App Capabilities -->
   <link rel="manifest" href="/manifest.json">
@@ -34,7 +34,30 @@
   <!-- Performance Hints -->
   <link rel="dns-prefetch" href="https://tile.openstreetmap.org">
 
-  <title>SkimmerWatch - Report Suspicious Activity</title>
+  <title>SkimmerWatch – Community-confirmed card skimmer map</title>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "SkimmerWatch",
+    "url": "https://skimmerwatch.example",
+    "description": "Community-confirmed card skimmer map and reports",
+    "sameAs": []
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "SkimmerWatch",
+    "url": "https://skimmerwatch.example",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://skimmerwatch.example/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
 </head>
 
 <body>

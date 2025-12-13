@@ -20,6 +20,9 @@ export interface Report {
     description?: string;
     timestamp: string; // ISO string
     confidenceScore?: number; // Added for AI moderation later
+    status?: 'Under Review' | 'Confirmed';
+    confirmationReason?: string;
+    lastEvaluatedAt?: string; // ISO string
 }
 
 export interface ReportFilter {
