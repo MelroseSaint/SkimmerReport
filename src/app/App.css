@@ -1,7 +1,7 @@
 .app-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   width: 100%;
 }
 
@@ -414,6 +414,8 @@
   display: flex;
   gap: 0.25rem;
   padding: 0.25rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .sticky-actions {
@@ -421,6 +423,7 @@
   bottom: 0;
   padding-top: var(--space-4);
   background: linear-gradient(to bottom, rgba(0,0,0,0), var(--glass-bg));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
 .time-filter button {
@@ -486,6 +489,8 @@
     padding: 0.5rem 0.875rem;
   }
 
+  .brand-badge { display: none; }
+
   .risk-legend {
     top: auto;
     bottom: 6rem;
@@ -512,7 +517,7 @@
   }
 
   .report-panel {
-    max-height: 70vh;
+    max-height: 70dvh;
     padding: 1rem;
   }
 
