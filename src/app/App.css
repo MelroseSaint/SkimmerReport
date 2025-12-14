@@ -679,13 +679,13 @@
   top: 0;
   left: 0;
   bottom: 0;
-  width: 280px;
+  width: clamp(160px, 42vw, 210px);
   background: var(--color-surface);
   border-right: 1px solid var(--glass-border);
   transform: translateX(-100%);
   transition: transform var(--transition-speed);
   z-index: 1102;
-  padding: var(--space-4);
+  padding: var(--space-3);
   display: flex;
   flex-direction: column;
 }
@@ -703,7 +703,10 @@
   .side-nav-panel { position: sticky; transform: none; top: 0; height: calc(100vh - 0px); }
 }
 @media (max-width: 480px) {
-  .side-nav-panel { width: min(80vw, 320px); }
+  .side-nav-panel { width: min(56vw, 200px); padding: var(--space-2); }
+  .nav-list { gap: var(--space-1); }
+  .nav-link { padding: 0.4rem; font-size: 0.9rem; }
+  .nav-icon { width: 16px; height: 16px; }
 }
 .locations-panel {
   position: fixed;
