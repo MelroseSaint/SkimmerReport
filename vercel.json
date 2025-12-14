@@ -1,4 +1,8 @@
 {
+  "rewrites": [
+    { "source": "/privacy", "destination": "/" },
+    { "source": "/test", "destination": "/" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
