@@ -1,6 +1,6 @@
 export default function Privacy() {
   return (
-    <div style={{ padding: '1rem', maxWidth: 900, margin: '0 auto' }}>
+    <div className="privacy-page">
       <h1>Privacy</h1>
       <p>
         SkimmerWatch is designed with intentional engineering and clean code principles. The platform focuses on
@@ -22,4 +22,3 @@ export default function Privacy() {
     </div>
   );
 }
-

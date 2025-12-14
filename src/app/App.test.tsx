@@ -29,21 +29,13 @@ it('opens side nav via hamburger', async () => {
 
 it('shows nearby places after using address', async () => {
   render(<App />)
-  
-  // Open report panel
   const fab = await screen.findByRole('button', { name: 'Add new observation report' })
   await userEvent.click(fab)
-  
-  // Fill address
   await userEvent.type(screen.getByLabelText('Street address'), '123 Main St')
   await userEvent.type(screen.getByLabelText('City'), 'Springfield')
   await userEvent.type(screen.getByLabelText('State'), 'IL')
   await userEvent.type(screen.getByLabelText('ZIP'), '62701')
-  
-  // Click Use Address
   const useAddrBtn = screen.getByRole('button', { name: 'Approximate from address' })
   await userEvent.click(useAddrBtn)
-  
-  // Check for nearby places
   expect(await screen.findByText(/Nearby places/)).toBeTruthy()
 })

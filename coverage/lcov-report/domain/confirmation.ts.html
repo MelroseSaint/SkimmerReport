@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/23</span>
+                <span class='fraction'>23/23</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/17</span>
+                <span class='fraction'>17/17</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -106,8 +106,8 @@
 <a name='L41'></a><a href='#L41'>41</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -118,36 +118,36 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import type { Report, Location, ReportCategory } from './types'
 &nbsp;
-function <span class="fstat-no" title="function not covered" >siteKey(l</span>oc: Location): string {
-  const r = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(n</span>: number) =&gt; <span class="cstat-no" title="statement not covered" >Math.round(n * 10000) / 10000</span></span>
-<span class="cstat-no" title="statement not covered" >  return `${r(loc.latitude)},${r(loc.longitude)}`</span>
+function siteKey(loc: Location): string {
+  const r = (n: number) =&gt; Math.round(n * 10000) / 10000
+  return `${r(loc.latitude)},${r(loc.longitude)}`
 }
 &nbsp;
 export interface EvaluationResult {
@@ -157,31 +157,31 @@ export interface EvaluationResult {
   evaluatedAt: string
 }
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >evaluateReportsAtLocation(a</span>ll: Report[], loc: Location): EvaluationResult {
-  const key = <span class="cstat-no" title="statement not covered" >siteKey(loc)</span>
-  const group = <span class="cstat-no" title="statement not covered" >all.filter(<span class="fstat-no" title="function not covered" >r =&gt; <span class="cstat-no" title="statement not covered" >s</span>iteKey(r.location) === key)</span></span>
-  const now = <span class="cstat-no" title="statement not covered" >Date.now()</span>
-  let score = <span class="cstat-no" title="statement not covered" >0</span>
+export function evaluateReportsAtLocation(all: Report[], loc: Location): EvaluationResult {
+  const key = siteKey(loc)
+  const group = all.filter(r =&gt; siteKey(r.location) === key)
+  const now = Date.now()
+  let score = 0
 &nbsp;
   // +1 per unique user reporting same location (no user id yet, treat each report as unique)
-<span class="cstat-no" title="statement not covered" >  score += group.length</span>
+  score += group.length
 &nbsp;
   // +1 if reports occur within a defined time window (rolling 7 days)
-  const withinWindow = <span class="cstat-no" title="statement not covered" >group.filter(<span class="fstat-no" title="function not covered" >r =&gt; (<span class="cstat-no" title="statement not covered" >n</span>ow - new Date(r.timestamp).getTime()) &lt; 7 * 86400000)</span>.length</span>
-<span class="cstat-no" title="statement not covered" >  if (withinWindow &gt;= 2) <span class="cstat-no" title="statement not covered" >score += 1</span></span>
+  const withinWindow = group.filter(r =&gt; (now - new Date(r.timestamp).getTime()) &lt; 7 * 86400000).length
+  if (withinWindow &gt;= 2) score += 1
 &nbsp;
   // +2 if reports reference the same device type
-  const byCat = <span class="cstat-no" title="statement not covered" >new Map&lt;ReportCategory, number&gt;()</span>
-<span class="cstat-no" title="statement not covered" >  group.forEach(<span class="fstat-no" title="function not covered" >r =&gt; <span class="cstat-no" title="statement not covered" >b</span>yCat.set(r.category, (byCat.get(r.category) || 0) + 1))</span></span>
-  const sameTypeMax = <span class="cstat-no" title="statement not covered" >Math.max(0, ...Array.from(byCat.values()))</span>
-<span class="cstat-no" title="statement not covered" >  if (sameTypeMax &gt;= 2) <span class="cstat-no" title="statement not covered" >score += 2</span></span>
+  const byCat = new Map&lt;ReportCategory, number&gt;()
+  group.forEach(r =&gt; byCat.set(r.category, (byCat.get(r.category) || 0) + 1))
+  const sameTypeMax = Math.max(0, ...Array.from(byCat.values()))
+  if (sameTypeMax &gt;= 2) score += 2
 &nbsp;
   // +3 if reporter is trusted (no data available, skip)
 &nbsp;
-  const <span class="cstat-no" title="statement not covered" >evaluatedAt = new Date().toISOString()</span>
-  const confirm = <span class="cstat-no" title="statement not covered" >score &gt;= 4</span>
-  const reason = <span class="cstat-no" title="statement not covered" >confirm ? 'Confirmed by multiple independent reports' : undefined</span>
-<span class="cstat-no" title="statement not covered" >  return { score, confirm, reason, evaluatedAt }</span>
+  const evaluatedAt = new Date().toISOString()
+  const confirm = score &gt;= 4
+  const reason = confirm ? 'Confirmed by multiple independent reports' : undefined
+  return { score, confirm, reason, evaluatedAt }
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -190,7 +190,7 @@ export function <span class="fstat-no" title="function not covered" >evaluateRep
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-14T06:46:37.993Z
+                at 2025-12-14T09:44:16.735Z
             </div>
         <script src="../prettify.js"></script>
         <script>

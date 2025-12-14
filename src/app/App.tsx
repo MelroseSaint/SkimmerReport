@@ -314,14 +314,14 @@ function App() {
       setError(null);
       setStatusMsg('Submitting report...');
 
-      const newReport = await reportService.submitReport(
+      await reportService.submitReport(
         selectedLocation,
         category,
         observationType,
         description || undefined
       );
-
-      setReports((prev) => [...prev, newReport]);
+      const updated = await reportService.getReports();
+      setReports(updated);
       setReportsOpen(true);
       setPanelOpen(false);
       setDescription('');
@@ -508,20 +508,11 @@ function App() {
         </div>
         <div className="map-container">
           {loading ? (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-              color: 'var(--color-text-secondary)'
-            }}>
-              Loading map data...
-            </div>
+            <div className="map-loading">Loading map data...</div>
           ) : (
             <MapContainer
               center={center}
               zoom={13}
-              style={{ height: '100%', width: '100%' }}
               zoomControl={true}
               scrollWheelZoom={true}
               touchZoom={true}
@@ -594,7 +585,7 @@ function App() {
             <h2 id="report-panel-title">Submit Observation</h2>
             <button
               onClick={handleClosePanel}
-              style={{ background: 'transparent', border: 'none', padding: '0.5rem' }}
+              className="close-btn"
               aria-label="Close report panel"
             >
               <XIcon />
@@ -864,10 +855,10 @@ function App() {
       )}
       <footer className="footer" role="contentinfo">
         Developed by {import.meta.env.VITE_BRAND_NAME || 'SaintLabs'} ·
-        <a href={import.meta.env.VITE_BRAND_URL || 'https://github.com/MelroseSaint'} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>
+        <a href={import.meta.env.VITE_BRAND_URL || 'https://github.com/MelroseSaint'} target="_blank" rel="noopener noreferrer" className="link-inherit">
           {import.meta.env.VITE_BRAND_URL || 'https://github.com/MelroseSaint'}
         </a>
-        {' '}· <a href="/privacy" style={{ color: 'inherit' }}>Privacy</a>
+        {' '}· <a href="/privacy" className="link-inherit">Privacy</a>
       </footer>
     </div>
   );

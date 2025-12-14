@@ -43,19 +43,18 @@ export default function TestApi() {
   };
 
   return (
-    <div style={{ padding: '1rem', maxWidth: 800, margin: '0 auto' }}>
+    <div className="api-page">
       <h1>API Verification</h1>
       <p>Use these quick actions to verify the production API.</p>
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+      <div className="api-actions">
         <button onClick={getReports}>GET /api/reports</button>
         <button onClick={postSample}>POST /api/reports (sample)</button>
         <a href="/" style={{ marginLeft: 'auto' }}>Back</a>
       </div>
-      <div style={{ padding: '0.75rem', border: '1px solid var(--glass-border)', borderRadius: 8 }}>
-        <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{status}</div>
-        <pre style={{ whiteSpace: 'pre-wrap' }}>{payload}</pre>
+      <div className="api-card">
+        <div className="api-status">{status}</div>
+        <pre className="pre-wrap">{payload}</pre>
       </div>
     </div>
   );
 }
-
