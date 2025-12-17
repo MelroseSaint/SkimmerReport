@@ -22,13 +22,33 @@ export default function Transparency() {
                         We empower individuals to share observations and make informed decisions about where they use their cards.
                     </p>
 
-                    <h2>Data Collection Policy</h2>
+                    <h2>Signal Quality & Integrity</h2>
+                    <p>
+                        We employ a <strong>Signal-to-Noise Ratio (SNR)</strong> philosophy. In an open reporting system, individual data points are less significant than clusters, trends, and corroborated patterns.
+                    </p>
+                    <ul>
+                        <li><strong>Independent Weighting:</strong> We prioritize diversity of sources over volume. Multiple reports from a single source are dampening to prevent manipulation.</li>
+                        <li><strong>Thresholds:</strong> A single report is a "Pre-Signal" (unverified observation). It becomes a confirmed "Signal" only when corroboration thresholds are met.</li>
+                        <li><strong>Automated Abuse Detection:</strong> Velocity limits and heuristic analysis protect the ecosystem from spam or coordinated vandalism.</li>
+                    </ul>
+
+                    <h2>Data Collection & Lifecycle</h2>
+                    <h3>What We Collect</h3>
                     <p>We collect specific, minimal data points necessary to contextualize risk:</p>
                     <ul>
                         <li><strong>Location:</strong> The approximate geospatial coordinates of the observation.</li>
                         <li><strong>Timestamp:</strong> When the observation occurred.</li>
-                        <li><strong>Observation Type:</strong> The specific anomaly observed (e.g., loose card slot, hidden camera, keypad overlay).</li>
+                        <li><strong>Observation Type:</strong> The specific anomaly observed (e.g., loose card slot, hidden camera).</li>
                         <li><strong>Category:</strong> The type of terminal (ATM, Gas Pump, Point of Sale).</li>
+                    </ul>
+
+                    <h3>Data Retention</h3>
+                    <p>
+                        Risk information is highly time-sensitive.
+                    </p>
+                    <ul>
+                        <li><strong>Active Decay:</strong> Reports are assigned a relevance score that degrades over a 30-day curve.</li>
+                        <li><strong>Archiving:</strong> Reports exceeding the relevance window are automatically transitioned to "Historical" views. They remain accessible for research but do not trigger active alerts.</li>
                     </ul>
 
                     <h3>What We Do Not Collect</h3>
@@ -37,58 +57,53 @@ export default function Transparency() {
                         <li>We do not track users' movements beyond the specific act of reporting.</li>
                         <li>We never collect payment card numbers, PINs, or financial data.</li>
                     </ul>
-
-                    <h2>How Reports Are Processed</h2>
-                    <p>All submissions are treated as "User-Submitted Observations." They are not judgments of guilt or criminality.</p>
-                    <ol>
-                        <li><strong>Submission:</strong> A user submits an observation.</li>
-                        <li><strong>Indexing:</strong> The report is indexed by location and time.</li>
-                        <li><strong>Display:</strong> The report appears on the public map as an unverified signal.</li>
-                        <li><strong>Aging:</strong> Reports automatically fade in visual prominence as they age (<a href="#freshness">see Data Freshness</a>).</li>
-                    </ol>
-
-                    <h2>Status Indicators</h2>
-                    <ul>
-                        <li><strong>User Reported:</strong> The default status for all incoming community data.</li>
-                        <li><strong>Cluster/Hot Zone:</strong> Indicates a higher volume of recent reports in this specific area.</li>
-                        <li><strong>Historical:</strong> Data older than 30 days, kept for reference but possibly no longer reflecting current conditions.</li>
-                    </ul>
-
-                    <h2>Commitment to Neutrality</h2>
-                    <p>
-                        SkimmerWatch is a neutral platform. We do not inspect terminals, we do not arrest suspects, and we do not certify devices as safe.
-                        We provide the aggregate data so you can assess your own risk tolerance. Errors or outdated reports can be flagged for review.
-                    </p>
                 </section>
 
-                <section id="freshness" style={{ marginBottom: '2rem', borderTop: '1px solid var(--glass-border)', paddingTop: '2rem' }}>
-                    <h1>Understanding "Last Activity"</h1>
-
+                <section style={{ marginBottom: '2rem', borderTop: '1px solid var(--glass-border)', paddingTop: '2rem' }}>
+                    <h2>Ethical Use & Non-Misuse</h2>
                     <p>
-                        When viewing the SkimmerWatch map, you will see a "Last Activity" timestamp for Locations.
-                        It is crucial to interpret this correctly.
-                    </p>
-
-                    <h3>What It Means</h3>
-                    <p>
-                        This timestamp indicates the most recent user-submitted report received for that specific location or zone.
-                        It reflects the last time a community member observed and logged a potential issue.
-                    </p>
-
-                    <h3>Why Freshness Matters</h3>
-                    <p>
-                        Physical skimming devices are often transient; criminals may plant them for a few hours and remove them. Therefore:
+                        SkimmerWatch is a public-interest tool. By using this platform, you agree to:
                     </p>
                     <ul>
-                        <li><strong>Recent Activity (&lt; 24 hours):</strong> Suggests a potentially active or highly relevant risk.</li>
-                        <li><strong>Older Activity (&gt; 7 days):</strong> Suggests a historical risk pattern, though the specific device reported may have been removed.</li>
+                        <li><strong>Use Responsibly:</strong> Do not use this platform to target, harass, or defame specific businesses or individuals.</li>
+                        <li><strong>Report Honestly:</strong> Submit observations only when you genuinely suspect a physical anomaly.</li>
+                        <li><strong>No Vigilantism:</strong> If you find a device, <strong>do not remove it yourself</strong>. Notify store management or local law enforcement. Tampering with evidence can hinder investigations.</li>
                     </ul>
+                </section>
 
+                <section style={{ marginBottom: '2rem', borderTop: '1px solid var(--glass-border)', paddingTop: '2rem' }}>
+                    <h2>Threat Model & Limitations</h2>
+                    <p>
+                        <strong>"No Recent Reports" does not mean "Safe."</strong>
+                    </p>
+                    <p>
+                        The absence of activity simply means no one has submitted a report recently. A zero-report location could still have a compromised device that has gone unnoticed.
+                    </p>
                     <div className="alert" style={{ marginTop: '1rem', borderLeft: '4px solid var(--color-warning)' }}>
-                        <strong>Important:</strong> "No Recent Reports" does <em>not</em> mean "Safe."
-                        The absence of activity simply means no one has submitted a report recently.
-                        Always inspect the card reader yourself regardless of what the map indicates.
+                        <strong>Always Self-Check:</strong> We cannot certify any terminal as safe. Pivot from "trusting the map" to "trusting your inspection." Tug the card reader. Check for alignment issues. Cover your PIN.
                     </div>
+                </section>
+
+                <section style={{ marginBottom: '2rem', borderTop: '1px solid var(--glass-border)', paddingTop: '2rem' }}>
+                    <h2>Dispute / Correction Request</h2>
+                    <p>
+                        We strive for accuracy but acknowledge that user-submitted data provides "ground truth" which can sometimes be subjective.
+                    </p>
+                    <p>
+                        If you are a business owner and believe a report is factually impossible or malicious:
+                    </p>
+                    <ol>
+                        <li>Inspect your terminals immediately to ensure they are clear.</li>
+                        <li>Contact our disputes team (via the "About" or "Contact" channels) with evidence of inspection.</li>
+                        <li>We will review the report against our anomaly detection framework and reporter history. Validated disputes will result in report removal.</li>
+                    </ol>
+                </section>
+
+                <section style={{ marginBottom: '2rem', borderTop: '1px solid var(--glass-border)', paddingTop: '2rem' }}>
+                    <h2>Platform Status & Integrity</h2>
+                    <p>
+                        SkimmerWatch operates as a neutral, civilian-accessible risk intelligence system. We are not a law enforcement agency. We do not issue warrants. We do not verify crimes. We provide the aggregate data so you can assess your own risk tolerance.
+                    </p>
                 </section>
 
                 <section style={{ marginBottom: '2rem', borderTop: '1px solid var(--glass-border)', paddingTop: '2rem' }}>
@@ -108,6 +123,9 @@ export default function Transparency() {
 
                         <dt>User-Submitted</dt>
                         <dd>Data provided by community members. It is not externally verified by platform operators unless explicitly stated.</dd>
+
+                        <dt>Time Relevance</dt>
+                        <dd>The concept that the validity of a risk signal decreases as time passes without corroboration.</dd>
                     </dl>
                 </section>
 
