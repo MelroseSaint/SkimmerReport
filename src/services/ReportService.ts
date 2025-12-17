@@ -16,15 +16,18 @@ export class ReportService {
         location: Location,
         category: ReportCategory,
         observationType: ObservationType,
-        description?: string
+        description?: string,
+        merchant?: string
     ): Promise<Report> {
         // In production, this would POST to a serverless endpoint
-        // For now, use the in-memory repository
+        // For now, use in-memory repository
         return this.repository.save({
             location,
             category,
             observationType,
             description,
+            merchant: merchant || 'Unknown',
+            report_id: Math.random().toString(36).substring(2, 11),
         });
     }
 

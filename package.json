@@ -13,6 +13,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@vercel/node": "^5.5.15",
     "express": "^4.19.2",
     "jspdf": "^3.0.4",
     "leaflet": "^1.9.4",

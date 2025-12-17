@@ -14,14 +14,17 @@ export interface Location {
 
 export interface Report {
     id: string;
+    report_id: string; // Unique report identifier for automation
     location: Location;
+    merchant: string; // Merchant name
     category: ReportCategory;
     observationType: ObservationType;
     description?: string;
     timestamp: string; // ISO string
     confidenceScore?: number; // Added for AI moderation later
-    status?: 'Under Review' | 'Confirmed';
-    confirmationReason?: string;
+    status?: 'Under Review' | 'Confirmed' | 'Rejected' | 'Error';
+    reason?: string; // Reason for rejection or error
+    confirmationReason?: string; // Reason for confirmation
     lastEvaluatedAt?: string; // ISO string
 }
 

@@ -1,0 +1,284 @@
+import type { Report } from '../domain/types';
+import type { AutomationLog, ValidationResult, DuplicateCheckResult, EmailNotificationData } from '../domain/automation';
+import type { ReportFilter } from '../domain/types';
+import { InMemoryReportRepository } from '../infrastructure/InMemoryReportRepository';
+
+export class ReportAutomationService {
+    private reportRepository = new InMemoryReportRepository();
+    private automationLogs: AutomationLog[] = [];
+    private readonly EMAIL_RECIPIENT = 'Monroedoses@gmail.com';
+
+    // Main automation entry point
+    async processNewReport(report: Report): Promise<void> {
+        const logId = this.generateLogId();
+        
+        try {
+            await this.logAutomation({
+                id: logId,
+                report_id: report.report_id,
+                action: 'validation_started',
+                details: `Starting validation for report ${report.report_id}`,
+                status: 'pending',
+                timestamp: new Date().toISOString()
+            });
+
+            // Step 1: Validate required fields
+            const validation = await this.validateReport(report);
+            await this.logAutomation({
+                id: this.generateLogId(),
+                report_id: report.report_id,
+                action: 'validation_completed',
+                details: validation.isValid ? 'Validation passed' : `Validation failed: ${validation.errors.join(', ')}`,
+                status: validation.isValid ? 'success' : 'failure',
+                timestamp: new Date().toISOString()
+            });
+
+            if (!validation.isValid) {
+                await this.updateReportStatus(report.report_id, 'Rejected', validation.errors.join('; '));
+                return;
+            }
+
+            // Step 2: Check for duplicates
+            const duplicateCheck = await this.checkForDuplicates(report);
+            if (duplicateCheck.isDuplicate) {
+                await this.logAutomation({
+                    id: this.generateLogId(),
+                    report_id: report.report_id,
+                    action: 'duplicate_detected',
+                    details: `Duplicate report found: ${duplicateCheck.duplicateId}`,
+                    status: 'success',
+                    timestamp: new Date().toISOString()
+                });
+                await this.updateReportStatus(report.report_id, 'Rejected', 'Duplicate report');
+                return;
+            }
+
+            // Step 3: Confirm report
+            await this.updateReportStatus(report.report_id, 'Confirmed');
+            
+            // Step 4: Send email notification
+            await this.sendEmailNotification(report);
+
+        } catch (error) {
+            await this.handleError(report.report_id, error);
+        }
+    }
+
+    private async validateReport(report: Report): Promise<ValidationResult> {
+        const errors: string[] = [];
+
+        if (!report.report_id || report.report_id.trim() === '') {
+            errors.push('report_id is required');
+        }
+
+        if (!report.location || 
+            typeof report.location.latitude !== 'number' || 
+            typeof report.location.longitude !== 'number') {
+            errors.push('Valid location with latitude and longitude is required');
+        }
+
+        if (!report.merchant || report.merchant.trim() === '') {
+            errors.push('merchant is required');
+        }
+
+        if (!report.timestamp || !isValidDate(report.timestamp)) {
+            errors.push('Valid timestamp is required');
+        }
+
+        return {
+            isValid: errors.length === 0,
+            errors
+        };
+    }
+
+    private async checkForDuplicates(report: Report): Promise<DuplicateCheckResult> {
+        const filter: ReportFilter = {
+            center: report.location,
+            radius: 100 // 100 meter radius
+        };
+
+        const existingReports = await this.reportRepository.getReports(filter);
+        
+        // Check for reports with same merchant within 24 hours
+        const reportTime = new Date(report.timestamp);
+
+        for (const existingReport of existingReports) {
+            if (existingReport.report_id === report.report_id) continue;
+            
+            const existingTime = new Date(existingReport.timestamp);
+            const timeDiff = Math.abs(reportTime.getTime() - existingTime.getTime());
+            const hoursDiff = timeDiff / (1000 * 60 * 60);
+
+            if (hoursDiff <= 24 && 
+                existingReport.merchant.toLowerCase() === report.merchant.toLowerCase()) {
+                return {
+                    isDuplicate: true,
+                    duplicateId: existingReport.report_id
+                };
+            }
+        }
+
+        return { isDuplicate: false };
+    }
+
+    private async updateReportStatus(report_id: string, status: 'Confirmed' | 'Rejected' | 'Error', reason?: string): Promise<void> {
+        try {
+            const reports = await this.reportRepository.getReports();
+            const reportIndex = reports.findIndex(r => r.report_id === report_id);
+            
+            if (reportIndex !== -1) {
+                const updatedReport = {
+                    ...reports[reportIndex],
+                    status,
+                    reason,
+                    lastEvaluatedAt: new Date().toISOString()
+                };
+                
+                // Update in repository (this would need to be implemented in the repository)
+                await this.reportRepository.updateReport(report_id, updatedReport);
+                
+                await this.logAutomation({
+                    id: this.generateLogId(),
+                    report_id,
+                    action: 'status_updated',
+                    details: `Status updated to ${status}${reason ? ': ' + reason : ''}`,
+                    status: 'success',
+                    timestamp: new Date().toISOString()
+                });
+            }
+        } catch (error) {
+            await this.logAutomation({
+                id: this.generateLogId(),
+                report_id,
+                action: 'status_updated',
+                details: `Failed to update status: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                status: 'failure',
+                timestamp: new Date().toISOString(),
+                error: error instanceof Error ? error.message : 'Unknown error'
+            });
+            throw error;
+        }
+    }
+
+    private async sendEmailNotification(report: Report): Promise<void> {
+        if (report.status !== 'Confirmed') return;
+
+        try {
+            const emailData: EmailNotificationData = {
+                to: this.EMAIL_RECIPIENT,
+                subject: `Skimmer Report Confirmed – ${report.report_id}`,
+                body: this.generateEmailBody(report),
+                report_id: report.report_id
+            };
+
+            // Send email using Vercel Email API or external service
+            await this.sendEmail(emailData);
+
+            await this.logAutomation({
+                id: this.generateLogId(),
+                report_id: report.report_id,
+                action: 'email_sent',
+                details: `Email sent to ${this.EMAIL_RECIPIENT}`,
+                status: 'success',
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            await this.logAutomation({
+                id: this.generateLogId(),
+                report_id: report.report_id,
+                action: 'email_sent',
+                details: `Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                status: 'failure',
+                timestamp: new Date().toISOString(),
+                error: error instanceof Error ? error.message : 'Unknown error'
+            });
+            throw error;
+        }
+    }
+
+    private generateEmailBody(report: Report): string {
+        return `
+Report ID: ${report.report_id}
+Location: ${report.location.latitude}, ${report.location.longitude}
+Merchant: ${report.merchant}
+Timestamp: ${report.timestamp}
+Status: ${report.status}
+${report.description ? 'Description: ' + report.description : ''}
+        `.trim();
+    }
+
+    private async sendEmail(emailData: EmailNotificationData): Promise<void> {
+        // Implementation depends on email service provider
+        // This is a placeholder that would use Vercel Email API, SendGrid, or similar
+        if (typeof fetch !== 'undefined') {
+            const response = await fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(emailData)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Email send failed: ${response.statusText}`);
+            }
+        } else {
+            // For serverless environment, use appropriate email service
+            console.log('Email would be sent:', emailData);
+        }
+    }
+
+    private async handleError(report_id: string, error: unknown): Promise<void> {
+        await this.logAutomation({
+            id: this.generateLogId(),
+            report_id,
+            action: 'error_occurred',
+            details: `Automation error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            status: 'failure',
+            timestamp: new Date().toISOString(),
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+
+        // Retry once
+        try {
+            await this.logAutomation({
+                id: this.generateLogId(),
+                report_id,
+                action: 'retry_attempted',
+                details: 'Attempting retry',
+                status: 'pending',
+                timestamp: new Date().toISOString(),
+                retryCount: 1
+            });
+            
+            // Retry logic would go here
+            // For now, just flag for manual review
+            await this.updateReportStatus(report_id, 'Error', 'Automation failed - manual review required');
+        } catch (retryError) {
+            await this.updateReportStatus(report_id, 'Error', 'Retry failed - manual review required');
+        }
+    }
+
+    private async logAutomation(log: AutomationLog): Promise<void> {
+        this.automationLogs.push(log);
+        // In a real implementation, this would persist to database
+        console.log('Automation Log:', log);
+    }
+
+    private generateLogId(): string {
+        return `log_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    }
+
+    // Public methods for accessing automation logs
+    async getAutomationLogs(): Promise<AutomationLog[]> {
+        return [...this.automationLogs];
+    }
+
+    async getAutomationLogsForReport(report_id: string): Promise<AutomationLog[]> {
+        return this.automationLogs.filter(log => log.report_id === report_id);
+    }
+}
+
+// Helper function
+function isValidDate(dateString: string): boolean {
+    const date = new Date(dateString);
+    return date instanceof Date && !isNaN(date.getTime());
+}

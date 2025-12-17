@@ -351,6 +351,7 @@ function App() {
   // Form state
   const [category, setCategory] = useState<ReportCategory>('ATM');
   const [observationType, setObservationType] = useState<ObservationType>('Loose card slot');
+  const [merchant, setMerchant] = useState('');
   const [description, setDescription] = useState('');
   const [manualLat, setManualLat] = useState<string>('');
   const [manualLon, setManualLon] = useState<string>('');
@@ -453,13 +454,15 @@ function App() {
         selectedLocation,
         category,
         observationType,
-        description || undefined
+        description || undefined,
+        merchant
       );
       const updated = await reportService.getReports();
       setReports(updated);
       setReportsOpen(true);
       setPanelOpen(false);
       setDescription('');
+      setMerchant('');
       setSelectedLocation(null);
       setStatusMsg('Report submitted');
     } catch (err) {
@@ -469,7 +472,7 @@ function App() {
     } finally {
       setSubmitting(false);
     }
-  }, [selectedLocation, category, observationType, description]);
+  }, [selectedLocation, category, observationType, description, merchant]);
 
   const handleClosePanel = useCallback(() => {
     setPanelOpen(false);
@@ -970,6 +973,19 @@ function App() {
               </div>
               <p className="helper-text">Not seeing it? Tap on the map and choose the nearest place.</p>
             </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="merchant">Merchant/Store Name *</label>
+            <input
+              type="text"
+              id="merchant"
+              value={merchant}
+              onChange={(e) => setMerchant(e.target.value)}
+              placeholder="e.g., Shell Gas Station, Bank of America ATM"
+              aria-label="Merchant name"
+              required
+            />
           </div>
 
           <div className="form-group">

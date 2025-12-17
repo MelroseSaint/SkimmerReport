@@ -32,7 +32,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/57</span>
+                <span class='fraction'>0/63</span>
             </div>
         
             
@@ -200,7 +200,15 @@
 <a name='L135'></a><a href='#L135'>135</a>
 <a name='L136'></a><a href='#L136'>136</a>
 <a name='L137'></a><a href='#L137'>137</a>
-<a name='L138'></a><a href='#L138'>138</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -224,6 +232,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -294,6 +303,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -309,6 +323,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -358,12 +374,13 @@ function <span class="fstat-no" title="function not covered" >statusFor(i</span>
 &nbsp;
 interface Props {
   reports: Report[]
+  onClose?: () =&gt; void
 }
 &nbsp;
-export default function <span class="fstat-no" title="function not covered" >LocationList({</span> reports }: Props) {
+export default function <span class="fstat-no" title="function not covered" >LocationList({</span> reports, onClose }: Props) {
   const [search, setSearch<span class="cstat-no" title="statement not covered" >] = useState('')</span>
-  const [sortKey, setSortKey<span class="cstat-no" title="statement not covered" >] = useState&lt;'name'|'address'|'count'|'last'|'status'&gt;('count')</span>
-  const [sortDir, setSortDir<span class="cstat-no" title="statement not covered" >] = useState&lt;'asc'|'desc'&gt;('desc')</span>
+  const [sortKey, setSortKey<span class="cstat-no" title="statement not covered" >] = useState&lt;'name' | 'address' | 'count' | 'last' | 'status'&gt;('count')</span>
+  const [sortDir, setSortDir<span class="cstat-no" title="statement not covered" >] = useState&lt;'asc' | 'desc'&gt;('desc')</span>
   const [addrCache, setAddrCache<span class="cstat-no" title="statement not covered" >] = useState&lt;Record&lt;SiteKey, { name?: string; formatted?: string }&gt;&gt;({})</span>
 &nbsp;
   const <span class="cstat-no" title="statement not covered" >grouped = useMemo(<span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
@@ -384,18 +401,18 @@ export default function <span class="fstat-no" title="function not covered" >Loc
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
     let cancelled = <span class="cstat-no" title="statement not covered" >false</span>
-    ;<span class="cstat-no" title="statement not covered" >(<span class="fstat-no" title="function not covered" >async () =&gt; {</span></span>
-      const keys = <span class="cstat-no" title="statement not covered" >grouped.filter(<span class="fstat-no" title="function not covered" >g =&gt; <span class="cstat-no" title="statement not covered" >!</span>g.address || !g.name)</span>.map(<span class="fstat-no" title="function not covered" >g =&gt; <span class="cstat-no" title="statement not covered" >g</span>.key)</span>.slice(0, 10)</span>
-      const next: Record&lt;SiteKey, { name?: string; formatted?: string }&gt; = <span class="cstat-no" title="statement not covered" >{ ...addrCache }</span>
-<span class="cstat-no" title="statement not covered" >      for (const k of keys) {</span>
-        const g = <span class="cstat-no" title="statement not covered" >grouped.find(<span class="fstat-no" title="function not covered" >x =&gt; <span class="cstat-no" title="statement not covered" >x</span>.key === k)</span></span>
-<span class="cstat-no" title="statement not covered" >        if (!g) <span class="cstat-no" title="statement not covered" >continue</span></span>
-        const info = <span class="cstat-no" title="statement not covered" >await reverseGeocode(g.loc)</span>
-<span class="cstat-no" title="statement not covered" >        if (cancelled) <span class="cstat-no" title="statement not covered" >return</span></span>
-<span class="cstat-no" title="statement not covered" >        next[k] = { name: info?.name, formatted: info?.formatted }</span>
-      }
-<span class="cstat-no" title="statement not covered" >      if (!cancelled) <span class="cstat-no" title="statement not covered" >setAddrCache(next)</span></span>
-    })()
+      ; <span class="cstat-no" title="statement not covered" >(<span class="fstat-no" title="function not covered" >async () =&gt; {</span></span>
+        const keys = <span class="cstat-no" title="statement not covered" >grouped.filter(<span class="fstat-no" title="function not covered" >g =&gt; <span class="cstat-no" title="statement not covered" >!</span>g.address || !g.name)</span>.map(<span class="fstat-no" title="function not covered" >g =&gt; <span class="cstat-no" title="statement not covered" >g</span>.key)</span>.slice(0, 10)</span>
+        const next: Record&lt;SiteKey, { name?: string; formatted?: string }&gt; = <span class="cstat-no" title="statement not covered" >{ ...addrCache }</span>
+<span class="cstat-no" title="statement not covered" >        for (const k of keys) {</span>
+          const g = <span class="cstat-no" title="statement not covered" >grouped.find(<span class="fstat-no" title="function not covered" >x =&gt; <span class="cstat-no" title="statement not covered" >x</span>.key === k)</span></span>
+<span class="cstat-no" title="statement not covered" >          if (!g) <span class="cstat-no" title="statement not covered" >continue</span></span>
+          const info = <span class="cstat-no" title="statement not covered" >await reverseGeocode(g.loc)</span>
+<span class="cstat-no" title="statement not covered" >          if (cancelled) <span class="cstat-no" title="statement not covered" >return</span></span>
+<span class="cstat-no" title="statement not covered" >          next[k] = { name: info?.name, formatted: info?.formatted }</span>
+        }
+<span class="cstat-no" title="statement not covered" >        if (!cancelled) <span class="cstat-no" title="statement not covered" >setAddrCache(next)</span></span>
+      })()
 <span class="cstat-no" title="statement not covered" >    return <span class="fstat-no" title="function not covered" >() =&gt; {</span> <span class="cstat-no" title="statement not covered" >cancelled = true }</span></span>
   }, [grouped])
 &nbsp;
@@ -429,6 +446,11 @@ export default function <span class="fstat-no" title="function not covered" >Loc
     &lt;div className="locations-panel" role="dialog" aria-modal="true" aria-labelledby="locations-title"&gt;
       &lt;div className="locations-header"&gt;
         &lt;h2 id="locations-title"&gt;Reported Locations&lt;/h2&gt;
+        {onClose &amp;&amp; (
+          &lt;button onClick={onClose} aria-label="Close reports" className="close-btn"&gt;
+            &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;line x1="18" y1="6" x2="6" y2="18"&gt;&lt;/line&gt;&lt;line x1="6" y1="6" x2="18" y2="18"&gt;&lt;/line&gt;&lt;/svg&gt;
+          &lt;/button&gt;
+        )}
         &lt;input
           value={search}
           onChange={<span class="fstat-no" title="function not covered" >(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setSearch(e.target.value)}</span>
@@ -446,15 +468,17 @@ export default function <span class="fstat-no" title="function not covered" >Loc
         &lt;/div&gt;
         {sorted.map(<span class="fstat-no" title="function not covered" >(g</span>) =&gt; (
 <span class="cstat-no" title="statement not covered" >          &lt;details key={g.key} className={`locations-row`} role="row"&gt;</span>
-            &lt;summary className={`locations-cell locations-summary ${g.count&gt;=5?'priority-high':''}`} role="cell" aria-label="Expand location details"&gt;
+            &lt;summary className={`locations-cell locations-summary ${g.count &gt;= 5 ? 'priority-high' : ''}`} role="cell" aria-label="Expand location details"&gt;
               &lt;div className="locations-summary-main"&gt;
                 &lt;div className="locations-name"&gt;{g.name || 'Unnamed location'}&lt;/div&gt;
                 &lt;div className="locations-address"&gt;{g.address || 'Address unavailable'}&lt;/div&gt;
               &lt;/div&gt;
               &lt;div className="locations-summary-stats"&gt;
-                &lt;div className="locations-count" aria-label={`Reports ${g.count}`}&gt;{g.count}&lt;/div&gt;
-                &lt;div className="locations-last" aria-label="Most recent date"&gt;{new Date(g.last).toLocaleDateString()}&lt;/div&gt;
-                &lt;div className="locations-status"&gt;{g.status}&lt;/div&gt;
+                &lt;div className="stat"&gt;&lt;span className="stat-label"&gt;Business&lt;/span&gt;&lt;span className="stat-value"&gt;{g.name || '—'}&lt;/span&gt;&lt;/div&gt;
+                &lt;div className="stat"&gt;&lt;span className="stat-label"&gt;Address&lt;/span&gt;&lt;span className="stat-value"&gt;{g.address || '—'}&lt;/span&gt;&lt;/div&gt;
+                &lt;div className="stat"&gt;&lt;span className="stat-label"&gt;Reports&lt;/span&gt;&lt;span className="stat-value"&gt;{g.count}&lt;/span&gt;&lt;/div&gt;
+                &lt;div className="stat"&gt;&lt;span className="stat-label"&gt;Most Recent&lt;/span&gt;&lt;span className="stat-value"&gt;{new Date(g.last).toLocaleDateString()}&lt;/span&gt;&lt;/div&gt;
+                &lt;div className="stat"&gt;&lt;span className="stat-label"&gt;Status&lt;/span&gt;&lt;span className="stat-value"&gt;{g.status}&lt;/span&gt;&lt;/div&gt;
               &lt;/div&gt;
             &lt;/summary&gt;
             &lt;div className="locations-details" role="cell"&gt;
@@ -481,7 +505,7 @@ export default function <span class="fstat-no" title="function not covered" >Loc
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-14T09:44:16.735Z
+                at 2025-12-17T10:59:15.578Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
