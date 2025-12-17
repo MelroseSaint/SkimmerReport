@@ -5,8 +5,10 @@ import App from './App.tsx'
 import TestApi from './TestApi.tsx'
 import Privacy from './Privacy.tsx'
 
+import Transparency from './Transparency.tsx'
+
 const path = window.location.pathname;
-const Root = path === '/test' ? TestApi : path === '/privacy' ? Privacy : App;
+const Root = path === '/test' ? TestApi : path === '/privacy' ? Privacy : path === '/transparency' ? Transparency : App;
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

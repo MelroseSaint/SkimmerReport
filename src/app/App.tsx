@@ -603,6 +603,7 @@ function App() {
             <div className="nav-list">
               <button className="nav-link" aria-label="Hide menu" onClick={() => setNavOpen(false)}>✖ Hide menu</button>
               <a className="nav-link" href="/"><HomeIcon /> Home</a>
+              <a className="nav-link" href="/transparency"><div className="nav-icon">ℹ️</div> Transparency</a>
               <a className="nav-link" href="/privacy"><PrivacyIcon /> Privacy</a>
               {import.meta.env.VITE_SHOW_TEST_LINK === 'true' && (
                 <a className="nav-link" href="/test"><ApiIcon /> Verify API</a>
@@ -990,6 +991,7 @@ function App() {
           {import.meta.env.VITE_BRAND_URL || 'https://github.com/MelroseSaint'}
         </a>
         {' '}· <a href="/privacy" className="link-inherit">Privacy</a>
+        {' '}· <a href="/transparency" className="link-inherit">Transparency</a>
       </footer>
       <BottomNav activeTab={activeTab} />
     </div>
