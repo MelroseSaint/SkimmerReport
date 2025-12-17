@@ -1,6 +1,5 @@
 import type { Report } from '../domain/types';
 import type { AutomationLog, ValidationResult, DuplicateCheckResult, EmailNotificationData } from '../domain/automation';
-import type { ReportFilter } from '../domain/types';
 import { InMemoryReportRepository } from '../infrastructure/InMemoryReportRepository';
 
 export class ReportAutomationService {
@@ -96,10 +95,11 @@ export class ReportAutomationService {
     }
 
     private async checkForDuplicates(report: Report): Promise<DuplicateCheckResult> {
-        const existingReports = await this.reportRepository.getReports({
+        const filter = {
             center: report.location,
             radius: 100
-        });
+        };
+        const existingReports = await this.reportRepository.getReports(filter);
         
         // Check for reports with same merchant within 24 hours
         const reportTime = new Date(report.timestamp);
