@@ -1051,3 +1051,46 @@
   right: 2rem !important;
 }
 
+
+/* Fix: Make panel close buttons easier to hit on mobile */
+.close-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2000; /* Ensure strictly above other panel content */
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.close-btn svg {
+  width: 24px;
+  height: 24px;
+  color: var(--color-text-primary);
+}
+
+.close-btn:active {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(0.95);
+}
+
+/* Fix: iOS Full Screen Height Issue */
+.main-content.full-map-mode {
+  height: 100vh !important; /* Fallback */
+  height: 100dvh !important; /* Dynamic viewport height */
+}
+
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari specific fix */
+  .main-content.full-map-mode {
+    height: -webkit-fill-available !important;
+  }
+}
+
