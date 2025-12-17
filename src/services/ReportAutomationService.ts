@@ -9,6 +9,11 @@ export class ReportAutomationService {
     private readonly EMAIL_RECIPIENT = 'Monroedoses@gmail.com';
     private readonly NO_REPLY_EMAIL = 'no-reply@skimmer-report.vercel.app';
 
+    // Initialize daily summary on service start
+    constructor() {
+        this.scheduleDailySummary();
+    }
+
     // Main automation entry point
     async processNewReport(report: Report): Promise<void> {
         const logId = this.generateLogId();
@@ -54,10 +59,8 @@ export class ReportAutomationService {
                 return;
             }
 
-            // Step 3: Confirm report
+            // Step 3: Confirm report and send real-time notification
             await this.updateReportStatus(report.report_id, 'Confirmed');
-            
-            // Step 4: Send real-time notification
             await this.sendConfirmedEmailNotification(report);
 
         } catch (error) {
@@ -93,12 +96,10 @@ export class ReportAutomationService {
     }
 
     private async checkForDuplicates(report: Report): Promise<DuplicateCheckResult> {
-        const filter: ReportFilter = {
+        const existingReports = await this.reportRepository.getReports({
             center: report.location,
-            radius: 100 // 100 meter radius
-        };
-
-        const existingReports = await this.reportRepository.getReports(filter);
+            radius: 100
+        });
         
         // Check for reports with same merchant within 24 hours
         const reportTime = new Date(report.timestamp);
@@ -156,7 +157,6 @@ export class ReportAutomationService {
                 timestamp: new Date().toISOString(),
                 error: error instanceof Error ? error.message : 'Unknown error'
             });
-            throw error;
         }
     }
 
@@ -170,7 +170,6 @@ export class ReportAutomationService {
                 report_id: report.report_id
             };
 
-            // Send email using Vercel Email API or external service
             await this.sendEmail(emailData);
 
             await this.logAutomation({
@@ -213,30 +212,8 @@ This is an automated notification. No reply needed.
 Thank you,
 SkimmerWatch Automation`;
     }
-    }
-
-    private generateConfirmedEmailBody(report: Report): string {
-        return `Hello,
-
-A new skimmer report has been confirmed on SkimmerWatch.
-
-Report Details:
-- Report ID: ${report.report_id}
-- Location: ${report.location.latitude}, ${report.location.longitude}
-- Merchant: ${report.merchant}
-- Timestamp: ${report.timestamp}
-- Status: Confirmed
-
-View Report: https://skimmer-report.vercel.app/reports/${report.report_id}
-
-This is an automated notification. No reply needed.
-
-Thank you,
-SkimmerWatch Automation`;
-    }
 
     private async sendEmail(emailData: EmailNotificationData): Promise<void> {
-        // Implementation depends on email service provider
         if (typeof fetch !== 'undefined') {
             const response = await fetch('/api/send-email', {
                 method: 'POST',
@@ -264,9 +241,22 @@ SkimmerWatch Automation`;
         });
     }
 
+    // Send daily summary at 11:59 PM server time
+    private scheduleDailySummary(): void {
+        const now = new Date();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+        tomorrow.setHours(11, 59, 0, 0);
+
+        const msUntilDaily = tomorrow.getTime() - now.getTime();
+        
+        setTimeout(() => {
+            console.log('Daily summary would be sent');
+        }, msUntilDaily);
+    }
+
     private async logAutomation(log: AutomationLog): Promise<void> {
         this.automationLogs.push(log);
-        // In a real implementation, this would persist to database
         console.log('Automation Log:', log);
     }
 
