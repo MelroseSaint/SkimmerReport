@@ -309,7 +309,9 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string>('');
+  const [statusMsg, setStatusMsg] = useState<string>('');
   const [activeTab, setActiveTab] = useState('');
+  const [fullMap, setFullMap] = useState(false);
 
   // Handle hash navigation
   useEffect(() => {
@@ -498,7 +500,18 @@ function App() {
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
   }, [panelOpen, handleClosePanel, navOpen, locationsOpen, reportsOpen]);
+
+  useEffect(() => {
+    if (fullMap) {
+      setPanelOpen(false);
+      setNavOpen(false);
+      setLocationsOpen(false);
+      setReportsOpen(false);
+    }
+  }, [fullMap]);
 
   useEffect(() => {
     const v = parseFloat(manualLat);
@@ -515,94 +528,99 @@ function App() {
   return (
     <div className="app-container">
       {/* Header */}
-      <header className="header" role="banner">
-        <div className="header-logo">
-          <ShieldIcon />
-          <span className="header-title">SkimmerWatch</span>
-          <span className="brand-badge">
-            Developed by <a href={import.meta.env.VITE_BRAND_URL || 'https://darkstackstudiosinc.vercel.app/'} target="_blank" rel="noopener noreferrer">{import.meta.env.VITE_BRAND_NAME || 'DarkStackStudios Inc.'}</a>
-          </span>
-        </div>
-        <button
-          className="hamburger"
-          aria-label="Open navigation"
-          aria-expanded={navOpen}
-          aria-controls="primary-nav"
-          aria-haspopup="menu"
-          onClick={() => setNavOpen((v) => !v)}
-        >
-          <MenuIcon />
-        </button>
-        <nav className="top-nav" aria-label="Primary">
-          <a href="/" aria-label="Home">Home</a>
-          <a href="/privacy" aria-label="Privacy">Privacy</a>
-          {import.meta.env.VITE_SHOW_TEST_LINK === 'true' && (
-            <a href="/test" aria-label="Verify API">Verify API</a>
-          )}
-        </nav>
-        <div className="header-actions">
+      {!fullMap && (
+        <header className="header" role="banner">
+          <div className="header-logo">
+            <ShieldIcon />
+            <span className="header-title">SkimmerWatch</span>
+            <span className="brand-badge">
+              Developed by <a href={import.meta.env.VITE_BRAND_URL || 'https://darkstackstudiosinc.vercel.app/'} target="_blank" rel="noopener noreferrer">{import.meta.env.VITE_BRAND_NAME || 'DarkStackStudios Inc.'}</a>
+            </span>
+          </div>
           <button
-            onClick={() => {
-              const startTs = new Date(Date.now() - timeFilter * 86400000);
-              const reportsForExport = filteredReports;
-              const uniqueIds = new Set(reportsForExport.map(r => r.id));
-              const count = uniqueIds.size;
-              const categoryCounts = CATEGORIES.map(cat => ({
-                cat,
-                count: reportsForExport.filter(r => r.category === cat).length
-              }));
-              const avgLat = reportsForExport.length ? reportsForExport.reduce((a, r) => a + r.location.latitude, 0) / reportsForExport.length : center[0];
-              const avgLon = reportsForExport.length ? reportsForExport.reduce((a, r) => a + r.location.longitude, 0) / reportsForExport.length : center[1];
-              const lastTs = reportsForExport.length ? reportsForExport.reduce((a, r) => Math.max(a, new Date(r.timestamp).getTime()), 0) : Date.now();
-              const doc = new jsPDF();
-              doc.setFontSize(16);
-              doc.text('SkimmerWatch – Area Summary', 14, 20);
-              doc.setFontSize(11);
-              doc.text(`Time range: since ${startTs.toISOString().slice(0, 10)}`, 14, 30);
-              doc.text(`Approximate center: (${avgLat.toFixed(4)}, ${avgLon.toFixed(4)})`, 14, 38);
-              doc.text(`Unique reports: ${count}`, 14, 46);
-              let y = 54;
-              doc.text('Report categories:', 14, y); y += 8;
-              categoryCounts.forEach(({ cat, count }) => { doc.text(`• ${cat}: ${count}`, 20, y); y += 8; });
-              doc.text(`Most recent report: ${new Date(lastTs).toISOString().slice(0, 19).replace('T', ' ')}`, 14, y); y += 12;
-              doc.setFontSize(10);
-              doc.text('Disclaimer: User-submitted unverified reports. No accusations are made.', 14, y);
-              y += 10;
-              doc.text('Developed by DarkStackStudios Inc.', 14, y);
-              doc.save('skimmerwatch-area-summary.pdf');
-            }}
-            aria-label="Export report data"
+            className="hamburger"
+            aria-label="Open navigation"
+            aria-expanded={navOpen}
+            aria-controls="primary-nav"
+            aria-haspopup="menu"
+            onClick={() => setNavOpen((v) => !v)}
           >
-            Export Report
+            <MenuIcon />
           </button>
-          <button
-            onClick={() => {
-              const startTs = new Date(Date.now() - timeFilter * 86400000).toISOString();
-              const data = {
-                startTs,
-                count: filteredReports.length,
-                categories: CATEGORIES.map(cat => ({ cat, count: filteredReports.filter(r => r.category === cat).length })),
-                center: { lat: center[0], lon: center[1] }
-              };
-              const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-              const url = `${window.location.origin}/?case=${encoded}`;
-              navigator.clipboard.writeText(url);
-              alert('Shareable case link copied to clipboard');
-            }}
-            aria-label="Copy shareable case link"
-          >
-            Share Case Link
-          </button>
-        </div>
-      </header>
+          <nav className="top-nav" aria-label="Primary">
+            <a href="/" aria-label="Home">Home</a>
+            <a href="/transparency" aria-label="Transparency">Transparency</a>
+            <a href="/privacy" aria-label="Privacy">Privacy</a>
+            {import.meta.env.VITE_SHOW_TEST_LINK === 'true' && (
+              <a href="/test" aria-label="Verify API">Verify API</a>
+            )}
+            <button className="nav-link-btn" onClick={() => setFullMap(true)}>Full Map</button>
+          </nav>
+          <div className="header-actions">
+            <button
+              onClick={() => {
+                const startTs = new Date(Date.now() - timeFilter * 86400000);
+                const reportsForExport = filteredReports;
+                const uniqueIds = new Set(reportsForExport.map(r => r.id));
+                const count = uniqueIds.size;
+                const categoryCounts = CATEGORIES.map(cat => ({
+                  cat,
+                  count: reportsForExport.filter(r => r.category === cat).length
+                }));
+                const avgLat = reportsForExport.length ? reportsForExport.reduce((a, r) => a + r.location.latitude, 0) / reportsForExport.length : center[0];
+                const avgLon = reportsForExport.length ? reportsForExport.reduce((a, r) => a + r.location.longitude, 0) / reportsForExport.length : center[1];
+                const lastTs = reportsForExport.length ? reportsForExport.reduce((a, r) => Math.max(a, new Date(r.timestamp).getTime()), 0) : Date.now();
+                const doc = new jsPDF();
+                doc.setFontSize(16);
+                doc.text('SkimmerWatch – Area Summary', 14, 20);
+                doc.setFontSize(11);
+                doc.text(`Time range: since ${startTs.toISOString().slice(0, 10)}`, 14, 30);
+                doc.text(`Approximate center: (${avgLat.toFixed(4)}, ${avgLon.toFixed(4)})`, 14, 38);
+                doc.text(`Unique reports: ${count}`, 14, 46);
+                let y = 54;
+                doc.text('Report categories:', 14, y); y += 8;
+                categoryCounts.forEach(({ cat, count }) => { doc.text(`• ${cat}: ${count}`, 20, y); y += 8; });
+                doc.text(`Most recent report: ${new Date(lastTs).toISOString().slice(0, 19).replace('T', ' ')}`, 14, y); y += 12;
+                doc.setFontSize(10);
+                doc.text('Disclaimer: User-submitted unverified reports. No accusations are made.', 14, y);
+                y += 10;
+                doc.text('Developed by DarkStackStudios Inc.', 14, y);
+                doc.save('skimmerwatch-area-summary.pdf');
+              }}
+              aria-label="Export report data"
+            >
+              Export Report
+            </button>
+            <button
+              onClick={() => {
+                const startTs = new Date(Date.now() - timeFilter * 86400000).toISOString();
+                const data = {
+                  startTs,
+                  count: filteredReports.length,
+                  categories: CATEGORIES.map(cat => ({ cat, count: filteredReports.filter(r => r.category === cat).length })),
+                  center: { lat: center[0], lon: center[1] }
+                };
+                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+                const url = `${window.location.origin}/?case=${encoded}`;
+                navigator.clipboard.writeText(url);
+                alert('Shareable case link copied to clipboard');
+              }}
+              aria-label="Copy shareable case link"
+            >
+              Share Case Link
+            </button>
+          </div>
+        </header>
+      )}
 
       {/* Main Content */}
-      <main className={`main-content ${navOpen ? 'nav-open' : ''}`} role="main">
+      <main className={`main-content ${navOpen ? 'nav-open' : ''} ${fullMap ? 'full-map-mode' : ''}`} role="main">
         <aside className={`side-nav ${navOpen ? 'open' : ''}`}>
           <div className="side-nav-panel" id="primary-nav" role="navigation" aria-label="Primary">
             <div className="nav-list">
               <button className="nav-link" aria-label="Hide menu" onClick={() => setNavOpen(false)}>✖ Hide menu</button>
               <a className="nav-link" href="/"><HomeIcon /> Home</a>
+              <button className="nav-link" onClick={() => { setFullMap(true); setNavOpen(false); }}>🗺️ Full Map View</button>
               <a className="nav-link" href="/transparency"><div className="nav-icon">ℹ️</div> Transparency</a>
               <a className="nav-link" href="/privacy"><PrivacyIcon /> Privacy</a>
               {import.meta.env.VITE_SHOW_TEST_LINK === 'true' && (
@@ -638,6 +656,15 @@ function App() {
           </div>
         </div>
         <div className="map-container">
+          {fullMap && (
+            <button
+              className="exit-full-map-btn"
+              onClick={() => setFullMap(false)}
+              aria-label="Exit full map view"
+            >
+              Exit Full View
+            </button>
+          )}
           {loading ? (
             <div className="map-loading">Loading map data...</div>
           ) : (
@@ -985,7 +1012,7 @@ function App() {
           <ReportsList reports={reports} onClose={closeOverlay} />
         </>
       )}
-      <footer className="footer" role="contentinfo">
+      <footer className="footer" role="contentinfo" style={fullMap ? { display: 'none' } : {}}>
         Developed by {import.meta.env.VITE_BRAND_NAME || 'SaintLabs'} ·
         <a href={import.meta.env.VITE_BRAND_URL || 'https://github.com/MelroseSaint'} target="_blank" rel="noopener noreferrer" className="link-inherit">
           {import.meta.env.VITE_BRAND_URL || 'https://github.com/MelroseSaint'}
@@ -993,7 +1020,7 @@ function App() {
         {' '}· <a href="/privacy" className="link-inherit">Privacy</a>
         {' '}· <a href="/transparency" className="link-inherit">Transparency</a>
       </footer>
-      <BottomNav activeTab={activeTab} />
+      {!fullMap && <BottomNav activeTab={activeTab} />}
     </div>
   );
 }

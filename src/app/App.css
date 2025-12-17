@@ -915,3 +915,69 @@
   }
 }
 
+
+/* Full Map Mode */
+.full-map-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  z-index: 9000;
+  background: black;
+}
+
+.full-map-mode .leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* Hide clutter in full map mode */
+.full-map-mode .risk-legend,
+.full-map-mode .fab-button {
+  /* Keep buttons if needed, or hide them? 
+     User said 'interact', so adding reports might still be wanted.
+     Let's keep FAB, but maybe hide legend to maximize space? 
+     Actually, user wants to 'look at map fully', so maybe minimal UI.
+  */
+  z-index: 9002; /* Ensure above map */
+}
+
+/* Provide a clear exit button */
+.exit-full-map-btn {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.exit-full-map-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: translateX(-50%) scale(1.05);
+}
+
+.nav-link-btn {
+  background: none;
+  border: none;
+  font: inherit;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.nav-link-btn:hover {
+  outline: 2px solid var(--color-accent);
+}
+
