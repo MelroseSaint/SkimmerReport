@@ -309,7 +309,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string>('');
-  const [statusMsg, setStatusMsg] = useState<string>('');
+
   const [activeTab, setActiveTab] = useState('');
   const [fullMap, setFullMap] = useState(false);
 
