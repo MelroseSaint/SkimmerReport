@@ -113,9 +113,11 @@ export default function LocationList({ reports }: Props) {
                 <div className="locations-address">{g.address || 'Address unavailable'}</div>
               </div>
               <div className="locations-summary-stats">
-                <div className="locations-count" aria-label={`Reports ${g.count}`}>{g.count}</div>
-                <div className="locations-last" aria-label="Most recent date">{new Date(g.last).toLocaleDateString()}</div>
-                <div className="locations-status">{g.status}</div>
+                <div className="stat"><span className="stat-label">Business</span><span className="stat-value">{g.name || '—'}</span></div>
+                <div className="stat"><span className="stat-label">Address</span><span className="stat-value">{g.address || '—'}</span></div>
+                <div className="stat"><span className="stat-label">Reports</span><span className="stat-value">{g.count}</span></div>
+                <div className="stat"><span className="stat-label">Most Recent</span><span className="stat-value">{new Date(g.last).toLocaleDateString()}</span></div>
+                <div className="stat"><span className="stat-label">Status</span><span className="stat-value">{g.status}</span></div>
               </div>
             </summary>
             <div className="locations-details" role="cell">
