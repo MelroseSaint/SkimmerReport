@@ -19,12 +19,13 @@ function statusFor(items: Report[]): string {
 
 interface Props {
   reports: Report[]
+  onClose?: () => void
 }
 
-export default function LocationList({ reports }: Props) {
+export default function LocationList({ reports, onClose }: Props) {
   const [search, setSearch] = useState('')
-  const [sortKey, setSortKey] = useState<'name'|'address'|'count'|'last'|'status'>('count')
-  const [sortDir, setSortDir] = useState<'asc'|'desc'>('desc')
+  const [sortKey, setSortKey] = useState<'name' | 'address' | 'count' | 'last' | 'status'>('count')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [addrCache, setAddrCache] = useState<Record<SiteKey, { name?: string; formatted?: string }>>({})
 
   const grouped = useMemo(() => {
@@ -45,18 +46,18 @@ export default function LocationList({ reports }: Props) {
 
   useEffect(() => {
     let cancelled = false
-    ;(async () => {
-      const keys = grouped.filter(g => !g.address || !g.name).map(g => g.key).slice(0, 10)
-      const next: Record<SiteKey, { name?: string; formatted?: string }> = { ...addrCache }
-      for (const k of keys) {
-        const g = grouped.find(x => x.key === k)
-        if (!g) continue
-        const info = await reverseGeocode(g.loc)
-        if (cancelled) return
-        next[k] = { name: info?.name, formatted: info?.formatted }
-      }
-      if (!cancelled) setAddrCache(next)
-    })()
+      ; (async () => {
+        const keys = grouped.filter(g => !g.address || !g.name).map(g => g.key).slice(0, 10)
+        const next: Record<SiteKey, { name?: string; formatted?: string }> = { ...addrCache }
+        for (const k of keys) {
+          const g = grouped.find(x => x.key === k)
+          if (!g) continue
+          const info = await reverseGeocode(g.loc)
+          if (cancelled) return
+          next[k] = { name: info?.name, formatted: info?.formatted }
+        }
+        if (!cancelled) setAddrCache(next)
+      })()
     return () => { cancelled = true }
   }, [grouped])
 
@@ -90,6 +91,9 @@ export default function LocationList({ reports }: Props) {
     <div className="locations-panel" role="dialog" aria-modal="true" aria-labelledby="locations-title">
       <div className="locations-header">
         <h2 id="locations-title">Reported Locations</h2>
+        {onClose && (
+          <button onClick={onClose} aria-label="Close reports" className="nav-link">Close</button>
+        )}
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -107,7 +111,7 @@ export default function LocationList({ reports }: Props) {
         </div>
         {sorted.map((g) => (
           <details key={g.key} className={`locations-row`} role="row">
-            <summary className={`locations-cell locations-summary ${g.count>=5?'priority-high':''}`} role="cell" aria-label="Expand location details">
+            <summary className={`locations-cell locations-summary ${g.count >= 5 ? 'priority-high' : ''}`} role="cell" aria-label="Expand location details">
               <div className="locations-summary-main">
                 <div className="locations-name">{g.name || 'Unnamed location'}</div>
                 <div className="locations-address">{g.address || 'Address unavailable'}</div>

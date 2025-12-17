@@ -230,6 +230,40 @@ function App() {
   const [submitting, setSubmitting] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string>('');
 
+  // Handle hash navigation
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      setLocationsOpen(hash === '#locations');
+      setReportsOpen(hash === '#reports');
+      // If we are navigating to a top-level hash, ensure nav is closed
+      if (hash === '#locations' || hash === '#reports') {
+        setNavOpen(false);
+      }
+    };
+
+    // Initial check
+    handleHashChange();
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const closeOverlay = useCallback(() => {
+    // If there is a hash, clear it (which triggers the listener to close panels)
+    if (window.location.hash) {
+      // Use pushState to avoid scroll jump if possible, or just setting hash
+      history.pushState("", document.title, window.location.pathname + window.location.search);
+      // Manually trigger handler since pushState doesn't trigger hashchange
+      setLocationsOpen(false);
+      setReportsOpen(false);
+    } else {
+      // Fallback if state was somehow set without hash
+      setLocationsOpen(false);
+      setReportsOpen(false);
+    }
+  }, []);
+
   // Form state
   const [category, setCategory] = useState<ReportCategory>('ATM');
   const [observationType, setObservationType] = useState<ObservationType>('Loose card slot');
@@ -247,7 +281,7 @@ function App() {
   const [addressHintActive, setAddressHintActive] = useState(false);
   const [nearbyPOIs, setNearbyPOIs] = useState<POIResult[]>([]);
   const [poiLoading, setPoiLoading] = useState(false);
-  
+
 
   // Load reports with error handling
   useEffect(() => {
@@ -358,11 +392,8 @@ function App() {
       if (e.key === 'Escape' && navOpen) {
         setNavOpen(false);
       }
-      if (e.key === 'Escape' && locationsOpen) {
-        setLocationsOpen(false);
-      }
-      if (e.key === 'Escape' && reportsOpen) {
-        setReportsOpen(false);
+      if (e.key === 'Escape' && (locationsOpen || reportsOpen)) {
+        closeOverlay();
       }
     };
 
@@ -428,13 +459,13 @@ function App() {
               doc.setFontSize(16);
               doc.text('SkimmerWatch – Area Summary', 14, 20);
               doc.setFontSize(11);
-              doc.text(`Time range: since ${startTs.toISOString().slice(0,10)}`, 14, 30);
+              doc.text(`Time range: since ${startTs.toISOString().slice(0, 10)}`, 14, 30);
               doc.text(`Approximate center: (${avgLat.toFixed(4)}, ${avgLon.toFixed(4)})`, 14, 38);
               doc.text(`Unique reports: ${count}`, 14, 46);
               let y = 54;
               doc.text('Report categories:', 14, y); y += 8;
               categoryCounts.forEach(({ cat, count }) => { doc.text(`• ${cat}: ${count}`, 20, y); y += 8; });
-              doc.text(`Most recent report: ${new Date(lastTs).toISOString().slice(0,19).replace('T',' ')}`, 14, y); y += 12;
+              doc.text(`Most recent report: ${new Date(lastTs).toISOString().slice(0, 19).replace('T', ' ')}`, 14, y); y += 12;
               doc.setFontSize(10);
               doc.text('Disclaimer: User-submitted unverified reports. No accusations are made.', 14, y);
               y += 10;
@@ -477,8 +508,8 @@ function App() {
               {import.meta.env.VITE_SHOW_TEST_LINK === 'true' && (
                 <a className="nav-link" href="/test"><ApiIcon /> Verify API</a>
               )}
-              <button className="nav-link" aria-label="Open locations list" onClick={() => { setLocationsOpen(true); setNavOpen(false); }}>📍 Locations</button>
-              <button className="nav-link" aria-label="Open reports list" onClick={() => { setReportsOpen(true); setNavOpen(false); }}>🗂️ Reports</button>
+              <button className="nav-link" aria-label="Open locations list" onClick={() => { window.location.hash = 'locations'; setNavOpen(false); }}>📍 Locations</button>
+              <button className="nav-link" aria-label="Open reports list" onClick={() => { window.location.hash = 'reports'; setNavOpen(false); }}>🗂️ Reports</button>
             </div>
           </div>
         </aside>
@@ -541,7 +572,7 @@ function App() {
             </MapContainer>
           )}
 
-          
+
 
           {/* Risk Legend */}
           <div className="risk-legend" role="complementary" aria-label="Activity level legend">
@@ -843,14 +874,14 @@ function App() {
       </main>
       {locationsOpen && (
         <>
-          <div className="panel-overlay" onClick={() => setLocationsOpen(false)} aria-hidden="true" />
-          <LocationList reports={reports} />
+          <div className="panel-overlay" onClick={closeOverlay} aria-hidden="true" />
+          <LocationList reports={reports} onClose={closeOverlay} />
         </>
       )}
       {reportsOpen && (
         <>
-          <div className="panel-overlay" onClick={() => setReportsOpen(false)} aria-hidden="true" />
-          <ReportsList reports={reports} onClose={() => setReportsOpen(false)} />
+          <div className="panel-overlay" onClick={closeOverlay} aria-hidden="true" />
+          <ReportsList reports={reports} onClose={closeOverlay} />
         </>
       )}
       <footer className="footer" role="contentinfo">
