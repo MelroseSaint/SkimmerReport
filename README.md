@@ -18,6 +18,7 @@ SkimmerWatch is a PWA-based reporting and hotspot awareness platform that:
 4. **No exact location exposure** - Zone-based visualization only
 5. **No IDE lock-in** - Clean, portable architecture
 6. **AI is advisory, not foundational** - App works without AI
+7. **Automated Processing** - Reports are automatically validated and processed
 
 ## Technology Stack
 
@@ -32,9 +33,17 @@ SkimmerWatch is a PWA-based reporting and hotspot awareness platform that:
 /src
 ├── /app          → PWA UI (stateless React components)
 ├── /domain       → Pure business logic (NO framework dependencies)
-├── /services     → API adapters
+├── /services     → API adapters + Automation logic
 ├── /ai           → Optional AI utilities (NOT required for functionality)
 └── /infrastructure → Storage, maps, external integrations
+```
+
+### API Structure
+```
+/api/
+├── reports.ts         → Report submission/retrieval + automation trigger
+├── automation.ts     → Manual automation trigger + log retrieval  
+└── send-email.ts     → Email notification service
 ```
 
 ## Getting Started
@@ -57,6 +66,15 @@ npm run build
 3. Ensure the default Node serverless runtime is enabled.
 4. The API route is available at `GET/POST /api/reports`.
 5. `vercel.json` provides SPA rewrites excluding `/api`.
+
+### Automation Endpoints
+The following API endpoints are automatically deployed:
+
+- `POST /api/automation` - Manual trigger for report processing
+- `GET /api/automation` - Retrieve automation logs
+- `POST /api/send-email` - Email notification service
+
+Automation runs automatically on new report submissions via `/api/reports`.
 
 ### Local Verification
 
@@ -104,6 +122,48 @@ Users can report observations of:
 - Fraud after use
 - Other
 
+### Required Report Fields
+- **report_id** - Unique identifier for tracking (auto-generated)
+- **location** - Geographic coordinates (latitude, longitude)
+- **merchant** - Business name where observation occurred
+- **timestamp** - When the observation was made (ISO format)
+- **category** - Type of payment device (ATM, Gas pump, Store POS)
+- **observationType** - What was suspected (overlay, camera, etc.)
+- **description** - Optional additional details
+
+### Report Status Types
+- **Under Review** - Initial state after submission
+- **Confirmed** - Passed validation and duplicate checks
+- **Rejected** - Failed validation or duplicate detected
+- **Error** - Processing error requiring manual review
+
+## Automation Workflow
+
+### Processing Pipeline
+1. **Report Submission** → New report added via `/api/reports`
+2. **Validation** → Check required fields and data integrity
+3. **Duplicate Detection** → Search for similar reports (24h window, 100m radius)
+4. **Status Assignment** → Set report status based on validation results
+5. **Email Notification** → Send email only for confirmed reports
+6. **Logging** → Record all automation actions with timestamps
+
+### Validation Rules
+- **Required Fields**: report_id, location, merchant, timestamp
+- **Location Validation**: Valid coordinates (latitude/longitude)
+- **Duplicate Criteria**: Same merchant + 100m radius + 24 hours
+- **Status Logic**: Valid & Unique → Confirmed; Invalid/Duplicate → Rejected
+
+### Email Notification Rules
+- **Sent Only For**: Confirmed reports
+- **Recipient**: Monroedoses@gmail.com
+- **Content**: Report ID, location, merchant, timestamp, status
+- **Not Sent For**: Rejected or Error status reports
+
+### Error Handling
+- **Automatic Retry**: One retry attempt on processing failures
+- **Manual Review**: Reports marked "Error" after retry failure
+- **Comprehensive Logging**: All errors logged with timestamps and details
+
 ## Privacy & Legal
 
 - **No IP logging**
@@ -111,8 +171,31 @@ Users can report observations of:
 - **EXIF stripping** on photo uploads
 - **Non-accusatory language** throughout
 - Clear disclaimers on all exported reports
+- **Automation logs** for audit trail and transparency
 
 ## API Overview
+
+### Reports API
+- **Endpoint**: `GET/POST /api/reports`
+- **Functionality**: Submit and retrieve skimmer observation reports
+- **Features**: Real-time validation, duplicate detection, and status updates
+
+### Automation API  
+- **Endpoint**: `POST /api/automation` (manual trigger)
+- **Endpoint**: `GET /api/automation` (retrieve logs)
+- **Functionality**: Automated report processing, validation, and email notifications
+- **Features**: 
+  - Validates required fields (report_id, location, merchant, timestamp)
+  - Detects duplicate reports within 24-hour window and 100m radius
+  - Updates report status (Confirmed/Rejected/Error)
+  - Sends email notifications for confirmed reports
+  - Comprehensive logging system for audit trail
+
+### Email API
+- **Endpoint**: `POST /api/send-email`
+- **Functionality**: Send email notifications for confirmed reports
+- **Recipient**: Monroedoses@gmail.com (configured)
+- **Format**: Standardized email template with report details
 
 ### Overpass API (OpenStreetMap)
 Used to query nearby ATMs, gas stations, and shops for location suggestions.
@@ -120,6 +203,49 @@ Used to query nearby ATMs, gas stations, and shops for location suggestions.
 ## License
 
 This project is private and proprietary.
+
+## Automation System Details
+
+The automation system processes skimmer reports automatically with the following workflow:
+
+### Validation
+- Checks for required fields: report_id, location, merchant, timestamp
+- Validates data integrity and format
+- Rejects incomplete or malformed reports
+
+### Duplicate Detection
+- Searches for similar reports within 100m radius and 24-hour window
+- Compares merchant names and proximity
+- Marks duplicates as "Rejected" to prevent spam
+
+### Email Notifications
+- Sends emails only for confirmed valid reports
+- Recipient: Monroedoses@gmail.com
+- Includes report details in standardized format
+
+### Status Management
+- **Confirmed**: Valid and unique reports
+- **Rejected**: Invalid or duplicate reports  
+- **Error**: Processing failures requiring manual review
+
+### Logging & Auditing
+- Every action is logged with timestamps
+- Success/failure states with error details
+- Exportable logs for review and compliance
+- Complete audit trail of automation decisions
+
+### Error Handling
+- Automatic retry on first failure
+- Manual review flag for persistent failures
+- Comprehensive error logging
+- Graceful degradation when services unavailable
+
+## Security & Privacy
+
+- All reports are anonymized and privacy-protected
+- Location fuzzing prevents exact address exposure
+- No personal data collection or IP logging
+- Full compliance with privacy principles
 ### Deployment Checklist
 
 - Set `VITE_USE_API=true` in Environment Variables.
@@ -129,3 +255,20 @@ This project is private and proprietary.
 - If hosting UI and API on different domains, configure CORS.
 - Avoid storing secrets client-side; none are required for MVP.
 - Validate `npm run build` and `npm run preview` locally before deploying.
+
+### Automation Deployment
+
+The automation system requires no additional configuration:
+- Email recipient is pre-configured (Monroedoses@gmail.com)
+- Automation logs are stored in memory and accessible via API
+- Email service uses standard API endpoints (Vercel Email or external SMTP)
+- All automation rules and validations are built into the system
+- Error handling and retry logic included automatically
+
+### Monitoring
+
+Monitor automation performance via:
+- `/api/automation` endpoint for logs retrieval
+- Console logs for real-time debugging
+- Report status updates in admin interface
+- Email delivery confirmation in automation logs
