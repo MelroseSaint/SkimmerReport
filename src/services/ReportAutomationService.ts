@@ -7,6 +7,7 @@ export class ReportAutomationService {
     private reportRepository = new InMemoryReportRepository();
     private automationLogs: AutomationLog[] = [];
     private readonly EMAIL_RECIPIENT = 'Monroedoses@gmail.com';
+    private readonly NO_REPLY_EMAIL = 'no-reply@skimmer-report.vercel.app';
 
     // Main automation entry point
     async processNewReport(report: Report): Promise<void> {
@@ -56,8 +57,8 @@ export class ReportAutomationService {
             // Step 3: Confirm report
             await this.updateReportStatus(report.report_id, 'Confirmed');
             
-            // Step 4: Send email notification
-            await this.sendEmailNotification(report);
+            // Step 4: Send real-time notification
+            await this.sendConfirmedEmailNotification(report);
 
         } catch (error) {
             await this.handleError(report.report_id, error);
@@ -101,7 +102,7 @@ export class ReportAutomationService {
         
         // Check for reports with same merchant within 24 hours
         const reportTime = new Date(report.timestamp);
-
+        
         for (const existingReport of existingReports) {
             if (existingReport.report_id === report.report_id) continue;
             
@@ -134,7 +135,6 @@ export class ReportAutomationService {
                     lastEvaluatedAt: new Date().toISOString()
                 };
                 
-                // Update in repository (this would need to be implemented in the repository)
                 await this.reportRepository.updateReport(report_id, updatedReport);
                 
                 await this.logAutomation({
@@ -160,14 +160,13 @@ export class ReportAutomationService {
         }
     }
 
-    private async sendEmailNotification(report: Report): Promise<void> {
-        if (report.status !== 'Confirmed') return;
-
+    private async sendConfirmedEmailNotification(report: Report): Promise<void> {
         try {
             const emailData: EmailNotificationData = {
                 to: this.EMAIL_RECIPIENT,
+                from: this.NO_REPLY_EMAIL,
                 subject: `Skimmer Report Confirmed – ${report.report_id}`,
-                body: this.generateEmailBody(report),
+                body: this.generateConfirmedEmailBody(report),
                 report_id: report.report_id
             };
 
@@ -178,7 +177,7 @@ export class ReportAutomationService {
                 id: this.generateLogId(),
                 report_id: report.report_id,
                 action: 'email_sent',
-                details: `Email sent to ${this.EMAIL_RECIPIENT}`,
+                details: `Real-time email sent to ${this.EMAIL_RECIPIENT}`,
                 status: 'success',
                 timestamp: new Date().toISOString()
             });
@@ -187,41 +186,68 @@ export class ReportAutomationService {
                 id: this.generateLogId(),
                 report_id: report.report_id,
                 action: 'email_sent',
-                details: `Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                details: `Failed to send real-time email: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 status: 'failure',
                 timestamp: new Date().toISOString(),
                 error: error instanceof Error ? error.message : 'Unknown error'
             });
-            throw error;
         }
     }
 
-    private generateEmailBody(report: Report): string {
-        return `
-Report ID: ${report.report_id}
-Location: ${report.location.latitude}, ${report.location.longitude}
-Merchant: ${report.merchant}
-Timestamp: ${report.timestamp}
-Status: ${report.status}
-${report.description ? 'Description: ' + report.description : ''}
-        `.trim();
+    private generateConfirmedEmailBody(report: Report): string {
+        return `Hello,
+
+A new skimmer report has been confirmed on SkimmerWatch.
+
+Report Details:
+- Report ID: ${report.report_id}
+- Location: ${report.location.latitude}, ${report.location.longitude}
+- Merchant: ${report.merchant}
+- Timestamp: ${report.timestamp}
+- Status: Confirmed
+
+View Report: https://skimmer-report.vercel.app/reports/${report.report_id}
+
+This is an automated notification. No reply needed.
+
+Thank you,
+SkimmerWatch Automation`;
+    }
+    }
+
+    private generateConfirmedEmailBody(report: Report): string {
+        return `Hello,
+
+A new skimmer report has been confirmed on SkimmerWatch.
+
+Report Details:
+- Report ID: ${report.report_id}
+- Location: ${report.location.latitude}, ${report.location.longitude}
+- Merchant: ${report.merchant}
+- Timestamp: ${report.timestamp}
+- Status: Confirmed
+
+View Report: https://skimmer-report.vercel.app/reports/${report.report_id}
+
+This is an automated notification. No reply needed.
+
+Thank you,
+SkimmerWatch Automation`;
     }
 
     private async sendEmail(emailData: EmailNotificationData): Promise<void> {
         // Implementation depends on email service provider
-        // This is a placeholder that would use Vercel Email API, SendGrid, or similar
         if (typeof fetch !== 'undefined') {
             const response = await fetch('/api/send-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(emailData)
             });
-            
+
             if (!response.ok) {
                 throw new Error(`Email send failed: ${response.statusText}`);
             }
         } else {
-            // For serverless environment, use appropriate email service
             console.log('Email would be sent:', emailData);
         }
     }
@@ -236,25 +262,6 @@ ${report.description ? 'Description: ' + report.description : ''}
             timestamp: new Date().toISOString(),
             error: error instanceof Error ? error.message : 'Unknown error'
         });
-
-        // Retry once
-        try {
-            await this.logAutomation({
-                id: this.generateLogId(),
-                report_id,
-                action: 'retry_attempted',
-                details: 'Attempting retry',
-                status: 'pending',
-                timestamp: new Date().toISOString(),
-                retryCount: 1
-            });
-            
-            // Retry logic would go here
-            // For now, just flag for manual review
-            await this.updateReportStatus(report_id, 'Error', 'Automation failed - manual review required');
-        } catch (retryError) {
-            await this.updateReportStatus(report_id, 'Error', 'Retry failed - manual review required');
-        }
     }
 
     private async logAutomation(log: AutomationLog): Promise<void> {

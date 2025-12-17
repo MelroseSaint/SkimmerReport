@@ -1,7 +1,7 @@
 export interface AutomationLog {
     id: string;
     report_id: string;
-    action: 'validation_started' | 'validation_completed' | 'duplicate_detected' | 'status_updated' | 'email_sent' | 'error_occurred' | 'retry_attempted';
+    action: 'validation_started' | 'validation_completed' | 'duplicate_detected' | 'status_updated' | 'email_sent' | 'error_occurred' | 'retry_attempted' | 'daily_summary_sent' | 'daily_summary_failed';
     details: string;
     status: 'success' | 'failure' | 'pending';
     timestamp: string; // ISO string
@@ -24,4 +24,5 @@ export interface EmailNotificationData {
     subject: string;
     body: string;
     report_id: string;
+    from?: string;
 }

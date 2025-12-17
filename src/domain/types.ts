@@ -13,8 +13,8 @@ export interface Location {
 }
 
 export interface Report {
-    id: string;
     report_id: string; // Unique report identifier for automation
+    id: string;
     location: Location;
     merchant: string; // Merchant name
     category: ReportCategory;
