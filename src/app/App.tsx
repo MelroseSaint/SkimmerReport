@@ -189,8 +189,48 @@ const HotspotOverlay = memo(({ reports }: { reports: Report[] }) => {
 });
 HotspotOverlay.displayName = 'HotspotOverlay';
 
+// Store marker icon
+const createStoreIcon = (type: string) => L.divIcon({
+  className: 'custom-div-icon',
+  html: `<div class="store-marker-badge ${type === 'fuel' ? 'gas' : 'store'}"><div class="dot"></div></div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12]
+});
+
+// POI Overlay component
+const POIOverlay = memo(({ pois, onSelect }: { pois: POIResult[], onSelect: (loc: Location, name: string) => void }) => {
+  return (
+    <>
+      {pois.map(p => {
+        const name = p.tags?.name || p.tags?.brand || p.tags?.operator || 'Store';
+        const type = p.tags?.amenity === 'fuel' ? 'fuel' : 'store';
+        return (
+          <Marker
+            key={`${p.type}-${p.id}`}
+            position={[p.lat, p.lon]}
+            icon={createStoreIcon(type)}
+            eventHandlers={{
+              click: (e) => {
+                L.DomEvent.stopPropagation(e); // Prevent map click
+                onSelect({ latitude: p.lat, longitude: p.lon }, name);
+              }
+            }}
+          />
+        );
+      })}
+    </>
+  );
+});
+POIOverlay.displayName = 'POIOverlay';
+
 // Location finder component
-const LocationFinder = memo(({ setCenter }: { setCenter: (loc: [number, number]) => void }) => {
+const LocationFinder = memo(({
+  setCenter,
+  onLocationFound
+}: {
+  setCenter: (loc: [number, number]) => void
+  onLocationFound: (loc: Location) => void
+}) => {
   const map = useMap();
 
   useEffect(() => {
@@ -199,7 +239,8 @@ const LocationFinder = memo(({ setCenter }: { setCenter: (loc: [number, number])
         (pos) => {
           const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
           setCenter(loc);
-          map.setView(loc, 14);
+          map.setView(loc, 15); // Closer zoom for mobile
+          onLocationFound({ latitude: loc[0], longitude: loc[1] });
         },
         (error) => {
           console.warn('Geolocation failed:', error.message);
@@ -210,11 +251,50 @@ const LocationFinder = memo(({ setCenter }: { setCenter: (loc: [number, number])
     } else {
       setCenter([40.7128, -74.006]);
     }
-  }, [map, setCenter]);
+  }, [map, setCenter, onLocationFound]);
 
   return null;
 });
+POIOverlay.displayName = 'POIOverlay';
 LocationFinder.displayName = 'LocationFinder';
+
+// Bottom Navigation for Mobile
+const BottomNav = memo(({ activeTab }: { activeTab: string }) => {
+  const go = (hash: string) => { window.location.hash = hash; };
+  return (
+    <nav className="bottom-nav">
+      <button
+        className={`b-nav-item ${activeTab === '' ? 'active' : ''}`}
+        onClick={() => { history.pushState("", document.title, window.location.pathname + window.location.search); window.location.hash = ''; }}
+      >
+        <HomeIcon />
+        <span>Home</span>
+      </button>
+      <button
+        className={`b-nav-item ${activeTab === '#locations' ? 'active' : ''}`}
+        onClick={() => go('locations')}
+      >
+        <span>📍</span>
+        <span>Locations</span>
+      </button>
+      <button
+        className={`b-nav-item ${activeTab === '#reports' ? 'active' : ''}`}
+        onClick={() => go('reports')}
+      >
+        <span>🗂️</span>
+        <span>Reports</span>
+      </button>
+      <button
+        className={`b-nav-item`}
+        onClick={() => { window.location.href = '/privacy'; }}
+      >
+        <PrivacyIcon />
+        <span>Privacy</span>
+      </button>
+    </nav>
+  );
+});
+BottomNav.displayName = 'BottomNav';
 
 function App() {
   const [reports, setReports] = useState<Report[]>([]);
@@ -229,11 +309,13 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string>('');
+  const [activeTab, setActiveTab] = useState('');
 
   // Handle hash navigation
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
+      setActiveTab(hash);
       setLocationsOpen(hash === '#locations');
       setReportsOpen(hash === '#reports');
       // If we are navigating to a top-level hash, ensure nav is closed
@@ -335,6 +417,23 @@ function App() {
     (async () => {
       setPoiLoading(true);
       const results = await queryNearbyPOIs(loc, 600);
+      setNearbyPOIs(results);
+      setPoiLoading(false);
+    })();
+  }, []);
+
+  const handlePOISelect = useCallback((loc: Location, name: string) => {
+    setSelectedLocation(loc);
+    setPanelOpen(true);
+    setAddressHintActive(false);
+    // Optionally set description or use it as context
+    console.log('Selected POI:', name);
+  }, []);
+
+  const handleAutoLocate = useCallback((loc: Location) => {
+    (async () => {
+      setPoiLoading(true);
+      const results = await queryNearbyPOIs(loc, 800);
       setNearbyPOIs(results);
       setPoiLoading(false);
     })();
@@ -556,9 +655,10 @@ function App() {
                 subdomains="abc"
                 maxZoom={19}
               />
-              <LocationFinder setCenter={setCenter} />
+              <LocationFinder setCenter={setCenter} onLocationFound={handleAutoLocate} />
               <MapClickHandler onMapClick={handleMapClick} />
               {showHotspots ? <HotspotOverlay reports={filteredReports} /> : <ReportMarkers reports={filteredReports} />}
+              <POIOverlay pois={nearbyPOIs} onSelect={handlePOISelect} />
               {selectedLocation && (
                 <Marker position={[selectedLocation.latitude, selectedLocation.longitude]} />
               )}
@@ -891,6 +991,7 @@ function App() {
         </a>
         {' '}· <a href="/privacy" className="link-inherit">Privacy</a>
       </footer>
+      <BottomNav activeTab={activeTab} />
     </div>
   );
 }
