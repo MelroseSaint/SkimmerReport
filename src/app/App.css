@@ -1094,3 +1094,13 @@
   }
 }
 
+
+/* Fix for removed labels */
+.label-text {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+

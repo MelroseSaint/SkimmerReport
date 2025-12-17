@@ -764,7 +764,7 @@ function App() {
           </p>
 
           <div className="form-group">
-            <label htmlFor="category-group">Category</label>
+            <div className="label-text">Category</div>
             <div className="category-buttons" id="category-group" role="group" aria-label="Report category">
               {CATEGORIES.map((cat) => (
                 <button
@@ -794,7 +794,7 @@ function App() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="manual-location">Approximate location (optional)</label>
+            <div className="label-text">Approximate location (optional)</div>
             <div className="grid grid-manual gap-sm" id="manual-location">
               <input
                 type="number"
