@@ -749,6 +749,13 @@
   .locations-head { font-size: 0.9rem; }
   .locations-cell { white-space: nowrap; }
 }
+
+@media (max-width: 480px) {
+  .locations-head { display: none; }
+  .locations-header { gap: var(--space-2); }
+  .locations-header h2 { font-size: 1rem; }
+  .locations-summary-stats { grid-template-columns: 44px 100px 90px; }
+}
 .reports-panel {
   position: fixed;
   top: 0;

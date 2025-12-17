@@ -59,6 +59,18 @@ body {
   flex-direction: column;
 }
 
+/* Mobile typography adjustments */
+@media (max-width: 480px) {
+  :root {
+    --font-size-xs: 11px;
+    --font-size-sm: 13px;
+    --font-size-md: 15px;
+    --font-size-lg: 16px;
+    --font-size-xl: 18px;
+  }
+  body { line-height: 1.5; }
+}
+
 /* Utilities */
 .glass-panel {
   background: var(--glass-bg);
