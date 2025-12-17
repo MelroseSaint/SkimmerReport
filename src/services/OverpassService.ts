@@ -34,14 +34,13 @@ export async function queryNearbyPOIs(
     const query = `
     [bbox:${bbox}]
     [out:json]
-    [timeout:30];
+    [timeout:90];
     (
       node["amenity"="atm"];
       node["amenity"="fuel"];
       node["amenity"="bank"];
       node["shop"="supermarket"];
       node["shop"="convenience"];
-      node["shop"];
     );
     out body;
   `;
