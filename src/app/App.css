@@ -981,3 +981,73 @@
   outline: 2px solid var(--color-accent);
 }
 
+
+/* Full Map Mode - Strict Overrides */
+.main-content.full-map-mode {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  z-index: 9000 !important;
+  background: black;
+  display: flex !important;
+  flex-direction: column;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.full-map-mode .toolbar,
+.full-map-mode .side-nav,
+.full-map-mode .nav-overlay {
+  display: none !important;
+}
+
+.full-map-mode .map-container {
+  flex: 1;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.full-map-mode .leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* Ensure exit button is visible */
+.exit-full-map-btn {
+  position: absolute;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 1rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.exit-full-map-btn:hover {
+  background: black;
+  transform: translateX(-50%) scale(1.05);
+  border-color: white;
+}
+
+/* Hide risk legend in full mode to clean up UI */
+.full-map-mode .risk-legend {
+  display: none !important;
+}
+
+/* Adjust FAB position in full mode if needed, or keep it */
+.full-map-mode .fab-button {
+  bottom: 2rem !important;
+  right: 2rem !important;
+}
+
