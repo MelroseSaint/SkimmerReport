@@ -9,6 +9,21 @@ export interface AutomationLog {
     retryCount?: number;
 }
 
+export interface AutomationLogSection {
+    confirmedReports: AutomationLog[];
+    unconfirmedReports: AutomationLog[];
+    emailActivity: AutomationLog[];
+    errors: AutomationLog[];
+}
+
+export interface DailySummaryData {
+    date: string;
+    confirmedReports: import('./types').Report[];
+    unconfirmedReports: import('./types').Report[];
+    totalConfirmed: number;
+    totalUnconfirmed: number;
+}
+
 export interface ValidationResult {
     isValid: boolean;
     errors: string[];

@@ -2,11 +2,20 @@ import type { Report } from '../domain/types';
 import type { AutomationLog, ValidationResult, DuplicateCheckResult, EmailNotificationData } from '../domain/automation';
 import { InMemoryReportRepository } from '../infrastructure/InMemoryReportRepository';
 
+interface DailySummaryData {
+    date: string;
+    confirmedReports: Report[];
+    unconfirmedReports: Report[];
+    totalConfirmed: number;
+    totalUnconfirmed: number;
+}
+
 export class ReportAutomationService {
     private reportRepository = new InMemoryReportRepository();
     private automationLogs: AutomationLog[] = [];
     private readonly EMAIL_RECIPIENT = 'Monroedoses@gmail.com';
     private readonly NO_REPLY_EMAIL = 'no-reply@skimmer-report.vercel.app';
+    private dailySummaryTimer?: NodeJS.Timeout;
 
     // Initialize daily summary on service start
     constructor() {
@@ -190,6 +199,10 @@ export class ReportAutomationService {
                 timestamp: new Date().toISOString(),
                 error: error instanceof Error ? error.message : 'Unknown error'
             });
+            
+            // Set report status to Error and trigger error handling
+            await this.updateReportStatus(report.report_id, 'Error', `Email notification failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            await this.handleError(report.report_id, error);
         }
     }
 
@@ -246,13 +259,99 @@ SkimmerWatch Automation`;
         const now = new Date();
         const tomorrow = new Date(now);
         tomorrow.setDate(now.getDate() + 1);
-        tomorrow.setHours(11, 59, 0, 0);
+        tomorrow.setHours(23, 59, 0, 0);
 
         const msUntilDaily = tomorrow.getTime() - now.getTime();
         
-        setTimeout(() => {
-            console.log('Daily summary would be sent');
+        this.dailySummaryTimer = setTimeout(() => {
+            this.sendDailySummary();
+            // Schedule next day's summary
+            this.scheduleDailySummary();
         }, msUntilDaily);
+    }
+
+    // Enhanced daily summary functionality
+    public async sendDailySummary(): Promise<void> {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const summaryData = await this.generateDailySummaryData(today);
+            
+            const emailData: EmailNotificationData = {
+                to: this.EMAIL_RECIPIENT,
+                from: this.NO_REPLY_EMAIL,
+                subject: `SkimmerWatch Daily Report Summary – ${today}`,
+                body: this.generateDailySummaryEmailBody(summaryData),
+                report_id: 'daily_summary'
+            };
+
+            await this.sendEmail(emailData);
+
+            await this.logAutomation({
+                id: this.generateLogId(),
+                report_id: 'daily_summary',
+                action: 'daily_summary_sent',
+                details: `Daily summary sent for ${today}. Confirmed: ${summaryData.totalConfirmed}, Unconfirmed: ${summaryData.totalUnconfirmed}`,
+                status: 'success',
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            await this.logAutomation({
+                id: this.generateLogId(),
+                report_id: 'daily_summary',
+                action: 'daily_summary_failed',
+                details: `Failed to send daily summary: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                status: 'failure',
+                timestamp: new Date().toISOString(),
+                error: error instanceof Error ? error.message : 'Unknown error'
+            });
+        }
+    }
+
+    private async generateDailySummaryData(date: string): Promise<DailySummaryData> {
+        const allReports = await this.reportRepository.getReports();
+        const todayReports = allReports.filter(report => 
+            report.timestamp.split('T')[0] === date
+        );
+
+        const confirmedReports = todayReports.filter(report => report.status === 'Confirmed');
+        const unconfirmedReports = todayReports.filter(report => 
+            report.status === 'Rejected' || report.status === 'Under Review' || report.status === 'Error'
+        );
+
+        return {
+            date,
+            confirmedReports,
+            unconfirmedReports,
+            totalConfirmed: confirmedReports.length,
+            totalUnconfirmed: unconfirmedReports.length
+        };
+    }
+
+    private generateDailySummaryEmailBody(summary: DailySummaryData): string {
+        let body = `Hello,\n\nDaily Skimmer Report Summary – ${summary.date}\n\n`;
+
+        if (summary.confirmedReports.length > 0) {
+            body += `Confirmed Reports:\n`;
+            summary.confirmedReports.forEach(report => {
+                body += `- ${report.report_id} | ${report.location.latitude}, ${report.location.longitude} | ${report.merchant} | ${report.timestamp}\n`;
+            });
+            body += `\n`;
+        } else {
+            body += `Confirmed Reports:\n- None\n\n`;
+        }
+
+        if (summary.unconfirmedReports.length > 0) {
+            body += `Unconfirmed Reports:\n`;
+            summary.unconfirmedReports.forEach(report => {
+                body += `- ${report.report_id} | ${report.location.latitude}, ${report.location.longitude} | ${report.merchant} | ${report.timestamp} | Status: ${report.status}\n`;
+            });
+        } else {
+            body += `Unconfirmed Reports:\n- None\n`;
+        }
+
+        body += `\nThis is an automated summary. No reply needed.\n\nThank you,\nSkimmerWatch Automation`;
+
+        return body;
     }
 
     private async logAutomation(log: AutomationLog): Promise<void> {
@@ -264,6 +363,68 @@ SkimmerWatch Automation`;
         return `log_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
     }
 
+    // Enhanced logging with separate sections
+    getAutomationLogSections(): {
+        confirmedReports: AutomationLog[];
+        unconfirmedReports: AutomationLog[];
+        emailActivity: AutomationLog[];
+        errors: AutomationLog[];
+    } {
+        const confirmedReports = this.automationLogs.filter(log => 
+            log.action === 'status_updated' && log.details.includes('Confirmed')
+        );
+        
+        const unconfirmedReports = this.automationLogs.filter(log => 
+            (log.action === 'status_updated' && log.details.includes('Rejected')) ||
+            (log.action === 'duplicate_detected') ||
+            (log.action === 'validation_completed' && log.status === 'failure')
+        );
+        
+        const emailActivity = this.automationLogs.filter(log => 
+            log.action === 'email_sent' || log.action === 'daily_summary_sent'
+        );
+        
+        const errors = this.automationLogs.filter(log => 
+            log.status === 'failure' || log.action === 'error_occurred'
+        );
+
+        return {
+            confirmedReports,
+            unconfirmedReports,
+            emailActivity,
+            errors
+        };
+    }
+
+    async exportAutomationLogs(): Promise<string> {
+        const sections = this.getAutomationLogSections();
+        
+        let exportText = `SkimmerWatch Automation Log Export\n`;
+        exportText += `Generated: ${new Date().toISOString()}\n\n`;
+        
+        exportText += `=== CONFIRMED REPORTS (${sections.confirmedReports.length}) ===\n`;
+        sections.confirmedReports.forEach(log => {
+            exportText += `[${log.timestamp}] ${log.report_id}: ${log.details}\n`;
+        });
+        
+        exportText += `\n=== UNCONFIRMED REPORTS (${sections.unconfirmedReports.length}) ===\n`;
+        sections.unconfirmedReports.forEach(log => {
+            exportText += `[${log.timestamp}] ${log.report_id}: ${log.details}\n`;
+        });
+        
+        exportText += `\n=== EMAIL ACTIVITY (${sections.emailActivity.length}) ===\n`;
+        sections.emailActivity.forEach(log => {
+            exportText += `[${log.timestamp}] ${log.report_id}: ${log.details}\n`;
+        });
+        
+        exportText += `\n=== ERRORS (${sections.errors.length}) ===\n`;
+        sections.errors.forEach(log => {
+            exportText += `[${log.timestamp}] ${log.report_id}: ${log.details}${log.error ? ' | Error: ' + log.error : ''}\n`;
+        });
+        
+        return exportText;
+    }
+
     // Public methods for accessing automation logs
     async getAutomationLogs(): Promise<AutomationLog[]> {
         return [...this.automationLogs];
@@ -271,6 +432,13 @@ SkimmerWatch Automation`;
 
     async getAutomationLogsForReport(report_id: string): Promise<AutomationLog[]> {
         return this.automationLogs.filter(log => log.report_id === report_id);
+    }
+
+    // Cleanup method
+    destroy(): void {
+        if (this.dailySummaryTimer) {
+            clearTimeout(this.dailySummaryTimer);
+        }
     }
 }
 

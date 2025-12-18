@@ -22,10 +22,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const reportData: Report = req.body;
       
-      // Validate that we have the required report data
-      if (!reportData) {
+      // Validate required fields
+      if (!reportData.report_id || !reportData.location || !reportData.merchant || !reportData.timestamp) {
         return res.status(400).json({ 
-          error: 'Missing report data',
+          error: 'Missing required fields',
+          required: ['report_id', 'location', 'merchant', 'timestamp'],
           timestamp: new Date().toISOString()
         });
       }
@@ -53,16 +54,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   
   if (req.method === 'GET') {
     try {
-      const { report_id } = req.query;
+      const { report_id, export: exportLogs } = req.query;
+      
+      if (exportLogs === 'true') {
+        const exportData = await automationService.exportAutomationLogs();
+        res.setHeader('Content-Type', 'text/plain');
+        res.setHeader('Content-Disposition', `attachment; filename="automation-logs-${new Date().toISOString().split('T')[0]}.txt"`);
+        res.status(200).send(exportData);
+        return;
+      }
       
       if (report_id) {
         // Get logs for specific report
         const logs = await automationService.getAutomationLogsForReport(report_id as string);
-        res.status(200).json({ logs, timestamp: new Date().toISOString() });
+        res.status(200).json({ logs, count: logs.length, timestamp: new Date().toISOString() });
       } else {
-        // Get all automation logs
-        const logs = await automationService.getAutomationLogs();
-        res.status(200).json({ logs, timestamp: new Date().toISOString() });
+        // Get organized log sections
+        const sections = automationService.getAutomationLogSections();
+        res.status(200).json({ sections, timestamp: new Date().toISOString() });
       }
       
     } catch (error) {
