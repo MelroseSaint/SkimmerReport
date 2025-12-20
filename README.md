@@ -9,6 +9,7 @@ SkimmerWatch is a PWA-based reporting and hotspot awareness platform that:
 - Aggregates reports into **geographic hotspots**
 - Displays **risk density, not accusations**
 - Lets users voluntarily submit compiled reports to authorities
+- Provides **local safety dashboards** for proactive community protection
 
 ## Core Principles
 
@@ -19,12 +20,15 @@ SkimmerWatch is a PWA-based reporting and hotspot awareness platform that:
 5. **No IDE lock-in** - Clean, portable architecture
 6. **AI is advisory, not foundational** - App works without AI
 7. **Automated Processing** - Reports are automatically validated and processed
+8. **SEO-Driven Local Authority** - Dedicated pages for cities to drive organic awareness
 
 ## Technology Stack
 
-- **Frontend**: React + TypeScript + Vite
+- **Frontend**: React + TypeScript + Vite + Tailwind CSS
 - **Maps**: OpenStreetMap via Leaflet
-- **Styling**: Vanilla CSS (dark mode, glassmorphism)
+- **SEO**: React-Helmet-Async + Dynamic Sitemap Generation
+- **Routing**: React Router DOM (v7)
+- **Styling**: Vanilla CSS (dark mode, glassmorphism) + Tailwind
 - **Architecture**: Layered (Domain-Driven Design principles)
 
 ## Project Structure
@@ -32,6 +36,8 @@ SkimmerWatch is a PWA-based reporting and hotspot awareness platform that:
 ```
 /src
 ├── /app          → PWA UI (stateless React components)
+│   ├── /components → Reusable UI components (SEO, Lists)
+│   └── /pages      → Route-level page components (Home, CityPage, StatePage)
 ├── /domain       → Pure business logic (NO framework dependencies)
 ├── /services     → API adapters + Automation logic
 ├── /ai           → Optional AI utilities (NOT required for functionality)
@@ -43,7 +49,8 @@ SkimmerWatch is a PWA-based reporting and hotspot awareness platform that:
 /api/
 ├── reports.ts         → Report submission/retrieval + automation trigger
 ├── automation.ts     → Manual automation trigger + log retrieval  
-└── send-email.ts     → Email notification service
+├── send-email.ts     → Email notification service
+└── sitemap.ts        → Dynamic XML sitemap generation for local SEO
 ```
 
 ## Getting Started
@@ -59,13 +66,25 @@ npm run dev
 npm run build
 ```
 
+## Local SEO & City Pages
+
+SkimmerWatch includes a robust Local SEO architecture to rank for "skimmer" related keywords in specific cities.
+
+- **Dynamic City Pages**: `/locations/:state/:city` (e.g., `/locations/illinois/chicago`)
+  - Acts as a "Live Safety Dashboard" for the area.
+  - Pivots to "Prevention Mode" if no reports are found.
+  - Injects specific Schema.org `ItemList` and `City` markup.
+- **State Hubs**: `/locations/:state` (e.g., `/locations/illinois`)
+  - Links to all major cities to establish site hierarchy.
+- **Dynamic Sitemap**: `sitemap.xml` is generated on-the-fly via `/api/sitemap` to ensure instant indexing of new incident locations.
+
 ## Deploy on Vercel
 
 1. Create a new Vercel project and import this repository.
 2. Set environment variable `VITE_USE_API=true` to use the serverless API.
 3. Ensure the default Node serverless runtime is enabled.
 4. The API route is available at `GET/POST /api/reports`.
-5. `vercel.json` provides SPA rewrites excluding `/api`.
+5. `vercel.json` provides SPA rewrites excluding `/api` and handles the `/sitemap.xml` rewrite.
 
 ### Automation Endpoints
 The following API endpoints are automatically deployed:
