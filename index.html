@@ -58,19 +58,8 @@
     }
   }
   </script>
-  <script>
-    // Security: Trusted Types Shim for libraries using innerHTML (like Leaflet)
-    if (window.trustedTypes && window.trustedTypes.createPolicy) {
-      try {
-        window.trustedTypes.createPolicy('default', {
-          createHTML: (string) => string
-        });
-      } catch (e) {
-        console.warn('TrustedTypes policy "default" already exists or could not be created', e);
-      }
-    }
-  </script>
 </head>
+
 
 <body>
   <div id="root"></div>
