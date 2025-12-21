@@ -296,6 +296,7 @@ const BottomNav = memo(({ activeTab }: { activeTab: string }) => {
 BottomNav.displayName = 'BottomNav';
 
 function Home() {
+  const [disclaimerOpen, setDisclaimerOpen] = useState(false);
   const { isLoading: dbLoading, error: dbError, data: dbData } = db.useQuery({ reports: {} });
 
   const reports = useMemo(() => {
@@ -577,22 +578,44 @@ const handleClosePanel = useCallback(() => {
             )}
             <button className="nav-link-btn" onClick={() => setFullMap(true)}>Full Map</button>
           </nav>
-          <div className="legal-disclaimer" style={{
-            backgroundColor: '#fef3c7',
-            border: '1px solid #f59e0b',
-            borderRadius: '6px',
-            padding: '0.5rem 1rem',
-            margin: '0.5rem 0',
-            fontSize: '0.85rem',
-            color: '#92400e',
-            gridColumn: '1 / -1'
-          }}>
-            <strong>Disclaimer</strong><br />
-            Skimmer Watcher is an independent, community-driven reporting platform. It is not a law enforcement agency, is not affiliated with, endorsed by, or operated by any police department, government entity, or financial institution, and does not act on behalf of any authority.
-            <br /><br />
-            Information displayed on this platform is based on community submissions and internal review criteria only. Any classifications, labels, or statuses shown are not official determinations, are not investigative findings, and should not be interpreted as law enforcement confirmation or action.
-            <br /><br />
-            Skimmer Watcher does not replace 911, emergency services, or official police reports. For crimes in progress, emergencies, or situations requiring immediate response, users must contact local law enforcement directly.
+          {/* Compact disclaimer pill + modal to avoid consuming vertical space */}
+          <div style={{ gridColumn: '1 / -1' }}>
+            <button
+              type="button"
+              onClick={() => setDisclaimerOpen(true)}
+              className="legal-disclaimer"
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '0.5rem',
+                backgroundColor: '#fef3c7',
+                border: '1px solid #f59e0b',
+                borderRadius: '999px',
+                padding: '0.25rem 0.65rem',
+                margin: '0.35rem 0 0.25rem',
+                color: '#92400e',
+                fontSize: '0.78rem',
+                lineHeight: 1.15,
+                maxWidth: '100%',
+                cursor: 'pointer'
+              }}
+              aria-label="Open disclaimer"
+            >
+              <span style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Disclaimer</span>
+              <span
+                style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  opacity: 0.95
+                }}
+              >
+                Not law enforcement • Community-submitted info • Emergencies: 911
+              </span>
+              <span style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Details</span>
+            </button>
           </div>
           <div className="header-actions">
             <button
@@ -648,6 +671,64 @@ const handleClosePanel = useCallback(() => {
               Share Report Link
             </button>
           </div>
+        {disclaimerOpen && (
+            <>
+              <div
+                className="panel-overlay"
+                onClick={() => setDisclaimerOpen(false)}
+                aria-hidden="true"
+              />
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label="Disclaimer"
+                style={{
+                  position: 'fixed',
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: 'min(640px, calc(100vw - 2rem))',
+                  maxHeight: 'min(70vh, 520px)',
+                  overflow: 'auto',
+                  background: '#fff',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(0,0,0,0.12)',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+                  padding: '1rem',
+                  zIndex: 1000
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center' }}>
+                  <div style={{ fontWeight: 800, fontSize: '1rem' }}>Disclaimer</div>
+                  <button
+                    type="button"
+                    onClick={() => setDisclaimerOpen(false)}
+                    aria-label="Close disclaimer"
+                    style={{
+                      border: '1px solid rgba(0,0,0,0.15)',
+                      background: '#fff',
+                      borderRadius: '10px',
+                      padding: '0.35rem 0.6rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+                <div style={{ marginTop: '0.75rem', fontSize: '0.9rem', lineHeight: 1.45, color: '#111827' }}>
+                  <p style={{ marginTop: 0 }}>
+                    Skimmer Watcher is an independent, community-driven reporting platform. It is not a law enforcement agency and is not affiliated with, endorsed by, or operated by any police department, government entity, or financial institution.
+                  </p>
+                  <p>
+                    Information displayed is based on community submissions and internal review criteria only. Any labels/statuses are not official determinations and should not be interpreted as law enforcement confirmation or action.
+                  </p>
+                  <p style={{ marginBottom: 0 }}>
+                    Skimmer Watcher does not replace 911, emergency services, or official police reports. For crimes in progress, emergencies, or situations requiring immediate response, contact local law enforcement directly.
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
         </header>
       )}
 
@@ -1081,13 +1162,17 @@ const handleClosePanel = useCallback(() => {
         </>
       )}
       <footer className="footer" role="contentinfo" style={fullMap ? { display: 'none' } : {}}>
-        <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
-          <strong>Disclaimer</strong><br />
-          Skimmer Watcher is an independent, community-driven reporting platform. It is not a law enforcement agency, is not affiliated with, endorsed by, or operated by any police department, government entity, or financial institution, and does not act on behalf of any authority.
-          <br /><br />
-          Information displayed on this platform is based on community submissions and internal review criteria only. Any classifications, labels, or statuses shown are not official determinations, are not investigative findings, and should not be interpreted as law enforcement confirmation or action.
-          <br /><br />
-          Skimmer Watcher does not replace 911, emergency services, or official police reports. For crimes in progress, emergencies, or situations requiring immediate response, users must contact local law enforcement directly.
+        <div style={{ marginBottom: '0.5rem', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+          <details>
+            <summary style={{ cursor: 'pointer', fontWeight: 700 }}>Disclaimer</summary>
+            <div style={{ marginTop: '0.35rem', lineHeight: 1.35 }}>
+              Skimmer Watcher is an independent, community-driven reporting platform and is not affiliated with law enforcement or any government entity.
+              <br />
+              Data shown is user-submitted and not an official determination.
+              <br />
+              For emergencies/crimes in progress, contact 911/local authorities.
+            </div>
+          </details>
         </div>
         Developed by {import.meta.env.VITE_BRAND_NAME || 'SaintLabs'} ·
         <a href={import.meta.env.VITE_BRAND_URL || 'https://github.com/MelroseSaint'} target="_blank" rel="noopener noreferrer" className="link-inherit">
