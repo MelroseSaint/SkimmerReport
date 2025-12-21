@@ -1,6 +1,7 @@
-import { adminDb } from '../lib/instantdb-admin';
-import type { Report, ReportFilter } from '../domain/types';
-import type { ReportRepository } from '../domain/ReportRepository';
+import { adminDb } from '../lib/instantdb-admin.js';
+import type { Report, ReportFilter } from '../domain/types.js';
+import type { ReportRepository } from '../domain/ReportRepository.js';
+
 
 export class AdminInstantReportRepository implements ReportRepository {
     async save(report: Omit<Report, 'id' | 'timestamp'>): Promise<Report> {

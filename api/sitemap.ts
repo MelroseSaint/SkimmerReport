@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getReports } from '../src/services/serverless';
-import type { Report } from '../src/domain/types';
+import { getReports } from '../src/services/serverless.js';
+import type { Report } from '../src/domain/types.js';
+
 
 const SITE_URL = 'https://skimmer-report.vercel.app';
 
@@ -15,7 +16,7 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
     // In production, Report would have city/state fields or we'd reverse geocode.
     // We will create a set of unique "state/city" strings.
     const cities = new Set<string>();
-    
+
     // Add some static/seed cities for demonstration since DB is ephemeral
     cities.add('illinois/chicago');
     cities.add('new-york/new-york');

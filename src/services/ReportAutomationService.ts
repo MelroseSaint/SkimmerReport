@@ -1,6 +1,7 @@
-import type { Report } from '../domain/types';
-import type { AutomationLog, ValidationResult, DuplicateCheckResult, EmailNotificationData } from '../domain/automation';
-import { AdminInstantReportRepository } from '../infrastructure/AdminInstantReportRepository';
+import type { Report } from '../domain/types.js';
+import type { AutomationLog, ValidationResult, DuplicateCheckResult, EmailNotificationData } from '../domain/automation.js';
+import { AdminInstantReportRepository } from '../infrastructure/AdminInstantReportRepository.js';
+
 
 
 interface DailySummaryData {

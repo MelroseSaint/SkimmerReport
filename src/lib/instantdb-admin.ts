@@ -1,5 +1,6 @@
 import { init } from '@instantdb/admin';
-import schema from '../instant.schema';
+import schema from '../instant.schema.js';
+
 
 export const adminDb = init({
     appId: process.env.VITE_INSTANT_APP_ID!,

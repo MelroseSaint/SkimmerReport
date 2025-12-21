@@ -1,5 +1,5 @@
-import type { Report, ReportFilter, Location, ReportCategory, ObservationType } from '../domain/types';
-import type { ReportRepository } from '../domain/ReportRepository';
+import type { Report, ReportFilter, Location, ReportCategory, ObservationType } from '../domain/types.js';
+import type { ReportRepository } from '../domain/ReportRepository.js';
 
 /**
  * ReportService - API adapter for report operations
@@ -20,7 +20,7 @@ export class ReportService {
         merchant?: string
     ): Promise<Report> {
         // In production, this would POST to a serverless endpoint
-        // For now, use in-memory repository
+        // For now, use the provided repository
         return this.repository.save({
             location,
             category,

@@ -1,9 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { postReports, getReports } from '../src/services/serverless';
-import { ReportAutomationService } from '../src/services/ReportAutomationService';
-import { setSecurityHeaders, rateLimiter, detectSuspiciousRequest, getClientIp } from '../src/security/validation';
-import { ipFilterManager, detectSuspiciousPatterns } from '../src/security/advanced';
-import { securityLogger } from '../src/security/audit';
+import { postReports, getReports } from '../src/services/serverless.js';
+import { ReportAutomationService } from '../src/services/ReportAutomationService.js';
+import { setSecurityHeaders, rateLimiter, detectSuspiciousRequest, getClientIp } from '../src/security/validation.js';
+import { ipFilterManager, detectSuspiciousPatterns } from '../src/security/advanced.js';
+import { securityLogger } from '../src/security/audit.js';
+
 
 function setCors(res: VercelResponse) {
   // Strict CORS - only allow specific origins in production
@@ -44,7 +45,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Advanced Threat Detection
-  const suspiciousPatterns = detectSuspiciousPatterns(req);
+  const suspiciousPatterns = detectSuspiciousPatterns(req as any);
+
   if (suspiciousPatterns.length > 0) {
     securityLogger.logEvent({
       event_type: 'suspicious_activity',
@@ -62,7 +64,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Detect suspicious requests at the API gateway level
-  const suspicious = detectSuspiciousRequest(req);
+  const suspicious = detectSuspiciousRequest(req as any);
+
   if (suspicious.isSuspicious) {
     securityLogger.logEvent({
       event_type: 'suspicious_activity',

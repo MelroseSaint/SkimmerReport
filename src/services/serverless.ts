@@ -1,7 +1,7 @@
-import type { ReportFilter } from '../domain/types';
-import { AdminInstantReportRepository } from '../infrastructure/AdminInstantReportRepository';
+import type { ReportFilter } from '../domain/types.js';
+import { AdminInstantReportRepository } from '../infrastructure/AdminInstantReportRepository.js';
 
-import { ReportService } from './ReportService';
+import { ReportService } from './ReportService.js';
 import {
     sanitizeText,
     sanitizeMerchant,
@@ -14,7 +14,8 @@ import {
     detectSuspiciousRequest,
     getClientIp,
     setSecurityHeaders
-} from '../security/validation';
+} from '../security/validation.js';
+
 
 const repo = new AdminInstantReportRepository();
 const service = new ReportService(repo);

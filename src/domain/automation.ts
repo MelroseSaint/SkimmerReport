@@ -18,8 +18,9 @@ export interface AutomationLogSection {
 
 export interface DailySummaryData {
     date: string;
-    confirmedReports: import('./types').Report[];
-    unconfirmedReports: import('./types').Report[];
+    confirmedReports: import('./types.js').Report[];
+    unconfirmedReports: import('./types.js').Report[];
+
     totalConfirmed: number;
     totalUnconfirmed: number;
 }

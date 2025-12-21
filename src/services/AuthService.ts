@@ -1,8 +1,9 @@
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
-import type { User, UserRole } from '../domain/User';
-import type { UserRepository } from '../domain/UserRepository';
-import { securityLogger } from '../security/audit';
+import type { User, UserRole } from '../domain/User.js';
+import type { UserRepository } from '../domain/UserRepository.js';
+import { securityLogger } from '../security/audit.js';
+
 
 const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-change-in-prod-immediately';
 const JWT_EXPIRATION = '1h';

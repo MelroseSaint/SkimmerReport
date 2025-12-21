@@ -4,8 +4,9 @@
  */
 
 import type { Request, Response, NextFunction } from 'express';
-import { securityLogger } from './audit';
-import { getClientIp } from './validation';
+import { securityLogger } from './audit.js';
+import { getClientIp } from './validation.js';
+
 
 /**
  * IP Whitelist/Blacklist Management

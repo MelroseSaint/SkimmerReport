@@ -1,5 +1,6 @@
-import type { User } from '../domain/User';
-import type { UserRepository } from '../domain/UserRepository';
+import type { User } from '../domain/User.js';
+import type { UserRepository } from '../domain/UserRepository.js';
+
 
 /**
  * InMemoryUserRepository

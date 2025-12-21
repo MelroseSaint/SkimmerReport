@@ -1,6 +1,7 @@
-import { adminDb } from '../lib/instantdb-admin';
-import type { User } from '../domain/User';
-import type { UserRepository } from '../domain/UserRepository';
+import { adminDb } from '../lib/instantdb-admin.js';
+import type { User } from '../domain/User.js';
+import type { UserRepository } from '../domain/UserRepository.js';
+
 
 export class InstantUserRepository implements UserRepository {
     async findByEmail(email: string): Promise<User | null> {

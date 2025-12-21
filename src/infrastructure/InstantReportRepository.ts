@@ -1,7 +1,8 @@
-import { db } from '../lib/instantdb';
+import { db } from '../lib/instantdb.js';
 import { id } from '@instantdb/react';
-import type { Report, ReportFilter } from '../domain/types';
-import type { ReportRepository } from '../domain/ReportRepository';
+import type { Report, ReportFilter } from '../domain/types.js';
+import type { ReportRepository } from '../domain/ReportRepository.js';
+
 
 export class InstantReportRepository implements ReportRepository {
     async save(report: Omit<Report, 'id' | 'timestamp'>): Promise<Report> {
