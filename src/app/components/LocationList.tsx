@@ -59,7 +59,7 @@ export default function LocationList({ reports, onClose }: Props) {
         if (!cancelled) setAddrCache(next)
       })()
     return () => { cancelled = true }
-  }, [grouped])
+  }, [grouped, addrCache])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()

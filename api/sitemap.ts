@@ -10,7 +10,7 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
     // 1. Fetch all reports to determine active cities
     // In a real DB scenario, we would use a distinct query: SELECT DISTINCT city, state FROM reports
     const response = await getReports({});
-    const _reports: Report[] = JSON.parse(response.body);
+    JSON.parse(response.body);
 
     // 2. Extract unique locations (Mocking city/state derivation since Report only has lat/lon)
     // In production, Report would have city/state fields or we'd reverse geocode.

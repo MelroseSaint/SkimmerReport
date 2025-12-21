@@ -45,7 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Advanced Threat Detection
-  const suspiciousPatterns = detectSuspiciousPatterns(req as any);
+  const suspiciousPatterns = detectSuspiciousPatterns(req);
 
   if (suspiciousPatterns.length > 0) {
     securityLogger.logEvent({
@@ -64,7 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Detect suspicious requests at the API gateway level
-  const suspicious = detectSuspiciousRequest(req as any);
+  const suspicious = detectSuspiciousRequest(req);
 
   if (suspicious.isSuspicious) {
     securityLogger.logEvent({
@@ -155,7 +155,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'GET') {
     try {
       const r = await getReports({
-        query: req.query as any,
+        query: req.query,
         headers: req.headers
       });
       res.status(r.statusCode).send(r.body);

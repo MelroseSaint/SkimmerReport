@@ -9,7 +9,7 @@ import {
   shouldDelete,
   exportSafeReports,
   generatePrivacyMetadata
-} from '../privacy'
+} from './privacy'
 
 describe('Privacy Protection', () => {
   const mockReport: Report = {

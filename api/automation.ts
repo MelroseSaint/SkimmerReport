@@ -30,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Enhanced security for automation endpoint
-  const suspicious = detectSuspiciousRequest(req as any);
+  const suspicious = detectSuspiciousRequest(req);
 
   if (suspicious.isSuspicious) {
     console.warn('Suspicious automation request detected:', {

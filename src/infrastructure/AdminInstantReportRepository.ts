@@ -6,7 +6,7 @@ import type { ReportRepository } from '../domain/ReportRepository.js';
 export class AdminInstantReportRepository implements ReportRepository {
     async save(report: Omit<Report, 'id' | 'timestamp'>): Promise<Report> {
         const timestampMs = Date.now();
-        const existingId = (report as any).id;
+        const existingId = (report as Report & { id?: string }).id;
 
         const finalId = existingId || Math.random().toString(36).substring(2, 15);
 
@@ -20,7 +20,7 @@ export class AdminInstantReportRepository implements ReportRepository {
                 observationType: report.observationType,
                 description: report.description,
                 timestamp: timestampMs,
-                status: (report as any).status || 'Under Review'
+                status: (report as Report & { status?: string }).status || 'Under Review'
             })
         );
 
@@ -40,7 +40,7 @@ export class AdminInstantReportRepository implements ReportRepository {
             }
         });
 
-        return (reports as any[]).map(r => ({
+        return (reports as Array<{id: string; report_id: string; latitude: number; longitude: number; merchant: string; category: string; observationType: string; description?: string; timestamp: number; status?: string}>).map(r => ({
             id: r.id,
             report_id: r.report_id,
             location: { latitude: r.latitude, longitude: r.longitude },
@@ -50,7 +50,7 @@ export class AdminInstantReportRepository implements ReportRepository {
             description: r.description,
             timestamp: new Date(r.timestamp).toISOString(),
             status: r.status as any
-        })) as Report[];
+        })));
     }
 
     async getById(id: string): Promise<Report | null> {

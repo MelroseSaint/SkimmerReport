@@ -246,11 +246,12 @@ export function setSecurityHeaders(res: any): void {
 /**
  * Bot detection heuristics
  */
-export function detectSuspiciousRequest(req: any): { isSuspicious: boolean; reasons: string[] } {
+export function detectSuspiciousRequest(req: { headers?: Record<string, string | string[] | undefined>; method?: string; url?: string; body?: unknown }): { isSuspicious: boolean; reasons: string[] } {
     const reasons: string[] = [];
     
-    // Check for missing or suspicious User-Agent
-    const userAgent = req.headers['user-agent'] || '';
+// Check for missing or suspicious User-Agent
+    const userAgentHeader = req.headers?.['user-agent'];
+    const userAgent = Array.isArray(userAgentHeader) ? userAgentHeader[0] || '' : userAgentHeader || '';
     if (!userAgent || userAgent.length < 10) {
         reasons.push('Missing or short User-Agent');
     }
@@ -265,24 +266,22 @@ export function detectSuspiciousRequest(req: any): { isSuspicious: boolean; reas
         /wget/i,
         /python/i,
         /java/i,
-        /go-http/i
+        /node/i,
+        /go-http/i,
+        /postman/i,
+        /insomnia/i
     ];
     
     if (botPatterns.some(pattern => pattern.test(userAgent))) {
         reasons.push('Bot-like User-Agent detected');
-    }
+}
     
     // Check for missing required headers
-    if (!req.headers['accept']) {
+    if (!req.headers?.['accept']) {
         reasons.push('Missing Accept header');
     }
     
-    // Check for suspicious request frequency
-    const clientIp = getClientIp(req);
-    if (!rateLimiter.isAllowed(clientIp)) {
-        reasons.push('Rate limit exceeded');
-    }
-    
+    // Do not perform rate limiting here; leave it to explicit checks in handlers
     return {
         isSuspicious: reasons.length > 0,
         reasons

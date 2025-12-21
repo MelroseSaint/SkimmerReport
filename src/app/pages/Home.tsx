@@ -492,12 +492,12 @@ function Home() {
     } finally {
       setSubmitting(false);
     }
-  }, [selectedLocation, category, observationType, description, merchant]);
+  }, [selectedLocation, category, observationType, description, merchant, setError]);
 
-  const handleClosePanel = useCallback(() => {
+const handleClosePanel = useCallback(() => {
     setPanelOpen(false);
     setError(null);
-  }, []);
+  }, [setError]);
 
   // Memoized filtered reports for performance
   const filteredReports = useMemo(() => {
@@ -523,7 +523,7 @@ function Home() {
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [panelOpen, handleClosePanel, navOpen, locationsOpen, reportsOpen]);
+  }, [panelOpen, navOpen, locationsOpen, reportsOpen, closeOverlay]);
 
   useEffect(() => {
     if (fullMap) {

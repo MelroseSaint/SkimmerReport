@@ -8,12 +8,6 @@ export default function SecurityDashboard() {
     const [filter, setFilter] = useState<'all' | 'critical' | 'high' | 'medium' | 'low'>('all');
     const [timeRange, setTimeRange] = useState<'1h' | '24h' | '7d'>('24h');
 
-    useEffect(() => {
-        loadEvents();
-        const interval = setInterval(loadEvents, 5000); // Refresh every 5s
-        return () => clearInterval(interval);
-    }, [filter, timeRange]);
-
     const loadEvents = () => {
         const hours = timeRange === '1h' ? 1 : timeRange === '24h' ? 24 : 168;
         const since = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
@@ -26,6 +20,12 @@ export default function SecurityDashboard() {
 
         setEvents(allEvents);
     };
+
+    useEffect(() => {
+        loadEvents();
+        const interval = setInterval(loadEvents, 5000); // Refresh every 5s
+        return () => clearInterval(interval);
+    }, [filter, timeRange]);
 
     const metrics = securityLogger.getSecurityMetrics();
 
@@ -89,7 +89,7 @@ export default function SecurityDashboard() {
             <div className="filters">
                 <div className="filter-group">
                     <label>Severity:</label>
-                    <select value={filter} onChange={(e) => setFilter(e.target.value as any)}>
+                    <select value={filter} onChange={(e) => setFilter(e.target.value as 'all' | 'critical' | 'high' | 'medium' | 'low')}>
                         <option value="all">All</option>
                         <option value="critical">Critical</option>
                         <option value="high">High</option>
@@ -99,7 +99,7 @@ export default function SecurityDashboard() {
                 </div>
                 <div className="filter-group">
                     <label>Time Range:</label>
-                    <select value={timeRange} onChange={(e) => setTimeRange(e.target.value as any)}>
+                    <select value={timeRange} onChange={(e) => setTimeRange(e.target.value as '1h' | '24h' | '7d')}>
                         <option value="1h">Last Hour</option>
                         <option value="24h">Last 24 Hours</option>
                         <option value="7d">Last 7 Days</option>

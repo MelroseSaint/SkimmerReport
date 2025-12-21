@@ -26,7 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Detect suspicious requests
-  const suspicious = detectSuspiciousRequest(req as any);
+  const suspicious = detectSuspiciousRequest(req);
 
   if (suspicious.isSuspicious) {
     console.warn('Suspicious email request detected:', {

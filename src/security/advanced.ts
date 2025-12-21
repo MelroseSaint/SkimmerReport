@@ -191,11 +191,11 @@ export function generateRequestFingerprint(req: Request): string {
 /**
  * Suspicious Pattern Detection
  */
-export function detectSuspiciousPatterns(req: Request): string[] {
-    const patterns: string[] = [];
-    const path = req.path.toLowerCase();
-    const query = JSON.stringify(req.query).toLowerCase();
-    const body = JSON.stringify(req.body).toLowerCase();
+export function detectSuspiciousPatterns(req: Request | { path?: string; query?: Record<string, unknown>; body?: unknown }): string[] {
+const patterns: string[] = [];
+    const path = (req.path || '/').toLowerCase();
+    const query = JSON.stringify(req.query || {}).toLowerCase();
+    const body = JSON.stringify(req.body || {}).toLowerCase();
 
     // SQL Injection patterns
     if (/(\bunion\b|\bselect\b|\bdrop\b|\binsert\b|\bdelete\b|\bupdate\b)/i.test(path + query + body)) {
