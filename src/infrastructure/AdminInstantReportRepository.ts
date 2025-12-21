@@ -50,7 +50,7 @@ export class AdminInstantReportRepository implements ReportRepository {
             description: r.description,
             timestamp: new Date(r.timestamp).toISOString(),
             status: r.status as any
-        })));
+        }));
     }
 
     async getById(id: string): Promise<Report | null> {
