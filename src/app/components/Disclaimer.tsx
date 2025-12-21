@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { hasAcceptedDisclaimer, acceptDisclaimer, clearDisclaimerAcceptance } from '../utils/disclaimerUtils';
+import { hasAcceptedDisclaimer, acceptDisclaimer } from '../utils/disclaimerUtils';
 import './Disclaimer.css';
 
 export default function Disclaimer() {
