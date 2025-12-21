@@ -5,22 +5,9 @@ import { HelmetProvider } from 'react-helmet-async'
 import './index.css'
 import App from './App.tsx'
 
-// Security: Trusted Types Shim for Leaflet and legacy libraries using innerHTML
-// This fulfills the 'TrustedHTML' requirement without breaking third-party markers/popups
-const ttWindow = window as any;
-if (ttWindow.trustedTypes && ttWindow.trustedTypes.createPolicy) {
-  try {
-    ttWindow.trustedTypes.createPolicy('default', {
-      createHTML: (string: string) => string,
-    });
-  } catch (e) {
-    console.warn('TrustedTypes policy "default" already exists or could not be created', e);
-  }
-}
-
-
 
 createRoot(document.getElementById('root')!).render(
+
   <StrictMode>
     <HelmetProvider>
       <BrowserRouter>

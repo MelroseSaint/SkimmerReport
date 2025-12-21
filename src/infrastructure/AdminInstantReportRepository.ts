@@ -40,7 +40,7 @@ export class AdminInstantReportRepository implements ReportRepository {
             }
         });
 
-        return reports.map(r => ({
+        return (reports as any[]).map(r => ({
             id: r.id,
             report_id: r.report_id,
             location: { latitude: r.latitude, longitude: r.longitude },
@@ -64,7 +64,7 @@ export class AdminInstantReportRepository implements ReportRepository {
 
         if (reports.length === 0) return null;
 
-        const r = reports[0];
+        const r = reports[0] as any;
         return {
             id: r.id,
             report_id: r.report_id,
@@ -77,4 +77,5 @@ export class AdminInstantReportRepository implements ReportRepository {
             status: r.status as any
         } as Report;
     }
+
 }
