@@ -1,16 +1,26 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { ReportAutomationService } from '../src/services/ReportAutomationService';
 import type { Report } from '../src/domain/types';
+import { 
+    setSecurityHeaders, 
+    rateLimiter, 
+    detectSuspiciousRequest, 
+    getClientIp,
+    validateReportId,
+    sanitizeText
+} from '../src/security/validation';
 
 function setCors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
 }
 
 const automationService = new ReportAutomationService();
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Apply security headers
+  setSecurityHeaders(res);
   setCors(res);
   
   if (req.method === 'OPTIONS') {
@@ -18,9 +28,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
   
+  // Enhanced security for automation endpoint
+  const suspicious = detectSuspiciousRequest(req);
+  if (suspicious.isSuspicious) {
+    console.warn('Suspicious automation request detected:', { 
+      ip: getClientIp(req), 
+      userAgent: req.headers['user-agent'],
+      reasons: suspicious.reasons 
+    });
+    return res.status(429).json({ 
+      error: 'Request blocked for security reasons',
+      reasons: suspicious.reasons 
+    });
+  }
+  
+  // Apply stricter rate limiting for automation
+  const clientIp = getClientIp(req);
+  if (!rateLimiter.isAllowed(clientIp)) {
+    return res.status(429).json({ 
+      error: 'Rate limit exceeded',
+      remaining: rateLimiter.getRemainingRequests(clientIp),
+      retryAfter: 3600
+    });
+  }
+  
   if (req.method === 'POST') {
     try {
       const reportData: Report = req.body;
+      
+      // Validate report ID format
+      if (reportData.report_id && !validateReportId(reportData.report_id)) {
+        return res.status(400).json({ 
+          error: 'Invalid report ID format',
+          timestamp: new Date().toISOString()
+        });
+      }
       
       // Validate required fields
       if (!reportData.report_id || !reportData.location || !reportData.merchant || !reportData.timestamp) {
@@ -31,7 +73,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
       
-      // Process the report through automation
+      // Sanitize any text fields
+      if (reportData.merchant) {
+        reportData.merchant = sanitizeText(reportData.merchant, 100);
+      }
+      if (reportData.description) {
+        reportData.description = sanitizeText(reportData.description, 500);
+      }
+      
+      // Log automation trigger for audit
+      console.log('Automation triggered:', {
+        report_id: reportData.report_id,
+        ip: clientIp,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Process report through automation
       await automationService.processNewReport(reportData);
       
       res.status(200).json({ 
@@ -45,7 +102,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.error('Automation error:', error);
       res.status(500).json({ 
         error: 'Automation processing failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: 'Internal server error',
         timestamp: new Date().toISOString()
       });
     }
@@ -56,7 +113,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const { report_id, export: exportLogs } = req.query;
       
+      // Validate report_id parameter
+      if (report_id && typeof report_id === 'string' && !validateReportId(report_id)) {
+        return res.status(400).json({ 
+          error: 'Invalid report ID format',
+          timestamp: new Date().toISOString()
+        });
+      }
+      
       if (exportLogs === 'true') {
+        // Export functionality - additional security check
         const exportData = await automationService.exportAutomationLogs();
         res.setHeader('Content-Type', 'text/plain');
         res.setHeader('Content-Disposition', `attachment; filename="automation-logs-${new Date().toISOString().split('T')[0]}.txt"`);
@@ -78,7 +144,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.error('Log retrieval error:', error);
       res.status(500).json({ 
         error: 'Failed to retrieve logs',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: 'Internal server error',
         timestamp: new Date().toISOString()
       });
     }

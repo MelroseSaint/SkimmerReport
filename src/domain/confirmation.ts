@@ -35,6 +35,6 @@ export function evaluateReportsAtLocation(all: Report[], loc: Location): Evaluat
 
   const evaluatedAt = new Date().toISOString()
   const confirm = score >= 4
-  const reason = confirm ? 'Confirmed by multiple independent reports' : undefined
+  const reason = confirm ? 'Corroborated by multiple independent reports' : undefined
   return { score, confirm, reason, evaluatedAt }
 }

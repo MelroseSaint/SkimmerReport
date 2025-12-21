@@ -18,11 +18,11 @@ L.Icon.Default.mergeOptions({
 
 import type { Report, ReportCategory, ObservationType, Location, Hotspot } from '../../domain/types';
 import { generateHotspots } from '../../domain/hotspot';
-import { InMemoryReportRepository } from '../../infrastructure/InMemoryReportRepository';
-import { ReportService } from '../../services/ReportService';
-import { ReportServiceHttp } from '../../services/ReportServiceHttp';
-import { ReportServiceHybrid } from '../../services/ReportServiceHybrid';
 import jsPDF from 'jspdf';
+import { db } from '../../lib/instantdb';
+import { id } from '@instantdb/react';
+
+
 import { geocodeAddress, suggestAddresses } from '../../services/GeocodingService';
 import { queryNearbyPOIs, type POIResult } from '../../services/OverpassService';
 import LocationList from '../components/LocationList'
@@ -88,13 +88,6 @@ const ApiIcon = memo(() => (
 ));
 ApiIcon.displayName = 'ApiIcon';
 
-// Initialize services (singleton pattern for scalability)
-const repository = new InMemoryReportRepository();
-const useApi = import.meta.env.VITE_USE_API === 'true';
-const memService = new ReportService(repository);
-const httpService = new ReportServiceHttp();
-const reportService = useApi ? new ReportServiceHybrid(httpService, memService) : memService;
-
 const CATEGORIES: ReportCategory[] = ['ATM', 'Gas pump', 'Store POS'];
 const OBSERVATION_TYPES: ObservationType[] = [
   'Loose card slot',
@@ -110,6 +103,11 @@ const TIME_FILTERS = [
   { label: '30d', days: 30 },
   { label: 'All', days: 365 },
 ];
+
+// Services logic migrated to InstantDB hooks and transactions
+
+
+
 
 // Debounce utility for performance
 function debounce<T extends (...args: any[]) => any>(func: T, wait: number): T {
@@ -266,7 +264,7 @@ const BottomNav = memo(({ activeTab }: { activeTab: string }) => {
     <nav className="bottom-nav">
       <button
         className={`b-nav-item ${activeTab === '' ? 'active' : ''}`}
-        onClick={() => { navigate('/'); window.scrollTo(0,0); }}
+        onClick={() => { navigate('/'); window.scrollTo(0, 0); }}
       >
         <HomeIcon />
         <span>Home</span>
@@ -298,7 +296,23 @@ const BottomNav = memo(({ activeTab }: { activeTab: string }) => {
 BottomNav.displayName = 'BottomNav';
 
 function Home() {
-  const [reports, setReports] = useState<Report[]>([]);
+  const { isLoading: dbLoading, error: dbError, data: dbData } = db.useQuery({ reports: {} });
+
+  const reports = useMemo(() => {
+    if (!dbData || !dbData.reports) return [];
+    return dbData.reports.map(r => ({
+      id: r.id,
+      report_id: r.report_id,
+      location: { latitude: r.latitude, longitude: r.longitude },
+      merchant: r.merchant,
+      category: r.category as ReportCategory,
+      observationType: r.observationType as ObservationType,
+      description: r.description,
+      timestamp: new Date(r.timestamp).toISOString(),
+      status: r.status as any
+    })) as Report[];
+  }, [dbData]);
+
   const [panelOpen, setPanelOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [locationsOpen, setLocationsOpen] = useState(false);
@@ -306,13 +320,19 @@ function Home() {
   const [center, setCenter] = useState<[number, number]>([40.7128, -74.006]);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [timeFilter, setTimeFilter] = useState(30);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
+  const error = localError || (dbError ? dbError.message : null);
+  const loading = dbLoading;
   const [submitting, setSubmitting] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string>('');
 
+  // Wrapper for existing code that uses setError
+  const setError = setLocalError;
+
+
   const [activeTab, setActiveTab] = useState('');
   const [fullMap, setFullMap] = useState(false);
+
 
   // Handle hash navigation
   useEffect(() => {
@@ -369,27 +389,17 @@ function Home() {
   const [poiLoading, setPoiLoading] = useState(false);
 
 
-  // Load reports with error handling
+  // Load reports status message
   useEffect(() => {
-    const loadReports = async () => {
-      try {
-        setLoading(true);
-        setStatusMsg('Loading reports...');
-        const data = await reportService.getReports();
-        setReports(data);
-        setError(null);
-        setStatusMsg('Reports loaded');
-      } catch (err) {
-        setError('Failed to load reports. Please try again.');
-        console.error('Error loading reports:', err);
-        setStatusMsg('Load failed');
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (loading) {
+      setStatusMsg('Connecting to database...');
+    } else if (error) {
+      setStatusMsg('Connection failed');
+    } else {
+      setStatusMsg('Live data connected');
+    }
+  }, [loading, error]);
 
-    loadReports();
-  }, []);
 
   useEffect(() => {
     const q = [addrLine, addrCity, addrState, addrZip].filter(Boolean).join(', ');
@@ -451,15 +461,24 @@ function Home() {
       setError(null);
       setStatusMsg('Submitting report...');
 
-      await reportService.submitReport(
-        selectedLocation,
-        category,
-        observationType,
-        description || undefined,
-        merchant
+      const reportId = id();
+      const timestamp = Date.now();
+      const report_id_automation = Math.random().toString(36).substring(2, 11);
+
+      await db.transact(
+        db.tx.reports[reportId].update({
+          report_id: report_id_automation,
+          latitude: selectedLocation.latitude,
+          longitude: selectedLocation.longitude,
+          merchant: merchant || 'Unknown',
+          category: category,
+          observationType: observationType,
+          description: description || undefined,
+          timestamp: timestamp,
+          status: 'Under Review'
+        })
       );
-      const updated = await reportService.getReports();
-      setReports(updated);
+
       setReportsOpen(true);
       setPanelOpen(false);
       setDescription('');
@@ -558,6 +577,23 @@ function Home() {
             )}
             <button className="nav-link-btn" onClick={() => setFullMap(true)}>Full Map</button>
           </nav>
+          <div className="legal-disclaimer" style={{
+            backgroundColor: '#fef3c7',
+            border: '1px solid #f59e0b',
+            borderRadius: '6px',
+            padding: '0.5rem 1rem',
+            margin: '0.5rem 0',
+            fontSize: '0.85rem',
+            color: '#92400e',
+            gridColumn: '1 / -1'
+          }}>
+            <strong>Disclaimer</strong><br />
+            Skimmer Watcher is an independent, community-driven reporting platform. It is not a law enforcement agency, is not affiliated with, endorsed by, or operated by any police department, government entity, or financial institution, and does not act on behalf of any authority.
+            <br /><br />
+            Information displayed on this platform is based on community submissions and internal review criteria only. Any classifications, labels, or statuses shown are not official determinations, are not investigative findings, and should not be interpreted as law enforcement confirmation or action.
+            <br /><br />
+            Skimmer Watcher does not replace 911, emergency services, or official police reports. For crimes in progress, emergencies, or situations requiring immediate response, users must contact local law enforcement directly.
+          </div>
           <div className="header-actions">
             <button
               onClick={() => {
@@ -602,14 +638,14 @@ function Home() {
                   categories: CATEGORIES.map(cat => ({ cat, count: filteredReports.filter(r => r.category === cat).length })),
                   center: { lat: center[0], lon: center[1] }
                 };
-                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-                const url = `${window.location.origin}/?case=${encoded}`;
+                const encoded = btoa(encodeURIComponent(JSON.stringify(data)));
+                const url = `${window.location.origin}/?report=${encoded}`;
                 navigator.clipboard.writeText(url);
-                alert('Shareable case link copied to clipboard');
+                alert('Shareable report link copied to clipboard');
               }}
-              aria-label="Copy shareable case link"
+              aria-label="Copy shareable report link"
             >
-              Share Case Link
+              Share Report Link
             </button>
           </div>
         </header>
@@ -975,16 +1011,32 @@ function Home() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="merchant">Merchant/Store Name *</label>
-            <input
-              type="text"
-              id="merchant"
-              value={merchant}
-              onChange={(e) => setMerchant(e.target.value)}
-              placeholder="e.g., Shell Gas Station, Bank of America ATM"
-              aria-label="Merchant name"
-              required
-            />
+            <div style={{ backgroundColor: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '6px', padding: '1rem', marginBottom: '1rem' }}>
+              <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: 'bold', color: '#92400e' }}>Before Submitting a Report</h4>
+              <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: '#92400e' }}>
+                Please read and acknowledge the following:
+              </p>
+              <ul style={{ margin: '0 0 0.5rem 0', paddingLeft: '1.2rem', fontSize: '0.85rem', color: '#92400e' }}>
+                <li>Skimmer Watcher is not affiliated with law enforcement and does not provide police services.</li>
+                <li>Submitting a report on this platform does not notify police or initiate an investigation.</li>
+                <li>This platform is for informational and awareness purposes only.</li>
+                <li>For crimes in progress, emergencies, or immediate threats, you must contact 911 or your local police department directly.</li>
+              </ul>
+            </div>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+              <input
+                type="checkbox"
+                required
+                style={{ marginTop: '0.25rem' }}
+                onChange={(e) => {
+                  const submitBtn = document.querySelector('.sticky-actions button.primary') as HTMLButtonElement;
+                  if (submitBtn) submitBtn.disabled = !e.target.checked || !selectedLocation || submitting;
+                }}
+              />
+              <span style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
+                I understand that Skimmer Watcher is not a law enforcement agency, that this submission does not replace official police reporting, and that I am responsible for contacting authorities if immediate action is required.
+              </span>
+            </label>
           </div>
 
           <div className="form-group">
@@ -1012,7 +1064,7 @@ function Home() {
           </div>
 
           <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '1rem', textAlign: 'center' }}>
-            This is an unverified user observation. No accusations are made.
+            This is an unverified user observation. No accusations are made. Report classifications are internal platform assessments based on non-law-enforcement criteria.
           </p>
         </div>
       </main>
@@ -1029,6 +1081,14 @@ function Home() {
         </>
       )}
       <footer className="footer" role="contentinfo" style={fullMap ? { display: 'none' } : {}}>
+        <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+          <strong>Disclaimer</strong><br />
+          Skimmer Watcher is an independent, community-driven reporting platform. It is not a law enforcement agency, is not affiliated with, endorsed by, or operated by any police department, government entity, or financial institution, and does not act on behalf of any authority.
+          <br /><br />
+          Information displayed on this platform is based on community submissions and internal review criteria only. Any classifications, labels, or statuses shown are not official determinations, are not investigative findings, and should not be interpreted as law enforcement confirmation or action.
+          <br /><br />
+          Skimmer Watcher does not replace 911, emergency services, or official police reports. For crimes in progress, emergencies, or situations requiring immediate response, users must contact local law enforcement directly.
+        </div>
         Developed by {import.meta.env.VITE_BRAND_NAME || 'SaintLabs'} ·
         <a href={import.meta.env.VITE_BRAND_URL || 'https://github.com/MelroseSaint'} target="_blank" rel="noopener noreferrer" className="link-inherit">
           {import.meta.env.VITE_BRAND_URL || 'https://github.com/MelroseSaint'}

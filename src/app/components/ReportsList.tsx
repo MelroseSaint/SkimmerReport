@@ -67,7 +67,7 @@ export default function ReportsList({ reports, onClose }: Props) {
           <button className="reports-cell" role="columnheader" onClick={() => toggleSort('category')} aria-label="Sort by category">Category</button>
           <button className="reports-cell" role="columnheader" onClick={() => toggleSort('observation')} aria-label="Sort by observation">Observation</button>
           <button className="reports-cell" role="columnheader" onClick={() => toggleSort('date')} aria-label="Sort by date">Date</button>
-          <button className="reports-cell" role="columnheader" onClick={() => toggleSort('status')} aria-label="Sort by status">Status</button>
+          <button className="reports-cell" role="columnheader" onClick={() => toggleSort('status')} aria-label="Sort by status" title="Internal platform classifications only, not official determinations">Status</button>
         </div>
         {sorted.map((r) => (
           <div key={r.id} className={`reports-row`} role="row">
@@ -75,7 +75,7 @@ export default function ReportsList({ reports, onClose }: Props) {
             <div className="reports-cell" role="cell">{r.observation}</div>
             <div className="reports-cell" role="cell">{new Date(r.date).toLocaleString()}</div>
             <div className="reports-cell" role="cell">
-              <span className="reports-status">{r.status}</span>
+              <span className="reports-status" title="Internal platform classification based on non-law-enforcement criteria">{r.status}</span>
             </div>
           </div>
         ))}

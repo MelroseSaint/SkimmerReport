@@ -14,7 +14,7 @@ function keyFor(loc: Location): SiteKey {
 }
 
 function statusFor(items: Report[]): string {
-  return items.some(r => r.status === 'Confirmed') ? 'Confirmed' : 'Under Review'
+  return items.some(r => r.status === 'Community Supported') ? 'Community Supported' : 'Under Review'
 }
 
 interface Props {

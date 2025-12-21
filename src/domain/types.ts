@@ -22,7 +22,8 @@ export interface Report {
     description?: string;
     timestamp: string; // ISO string
     confidenceScore?: number; // Added for AI moderation later
-    status?: 'Under Review' | 'Confirmed' | 'Rejected' | 'Error';
+    status?: 'Under Review' | 'Community Supported' | 'Rejected' | 'Error';
+    statusReason?: string; // Internal classification explanation
     reason?: string; // Reason for rejection or error
     confirmationReason?: string; // Reason for confirmation
     lastEvaluatedAt?: string; // ISO string

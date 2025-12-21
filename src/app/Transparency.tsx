@@ -12,7 +12,22 @@ export default function Transparency() {
                 </nav>
             </header>
 
-            <main className="privacy-page">
+<main className="privacy-page">
+
+              {/* Disclaimer */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6" style={{ fontSize: '0.85rem', color: '#92400e' }}>
+                <h4 className="font-bold mb-2">Disclaimer</h4>
+                <p className="mb-2">
+                  Skimmer Watcher is an independent, community-driven reporting platform. It is not a law enforcement agency, is not affiliated with, endorsed by, or operated by any police department, government entity, or financial institution, and does not act on behalf of any authority.
+                </p>
+                <p className="mb-2">
+                  Information displayed on this platform is based on community submissions and internal review criteria only. Any classifications, labels, or statuses shown are not official determinations, are not investigative findings, and should not be interpreted as law enforcement confirmation or action.
+                </p>
+                <p>
+                  Skimmer Watcher does not replace 911, emergency services, or official police reports. For crimes in progress, emergencies, or situations requiring immediate response, users must contact local law enforcement directly.
+                </p>
+              </div>
+
                 <section style={{ marginBottom: '2rem' }}>
                     <h1>Transparency & Methodology</h1>
 
@@ -28,7 +43,7 @@ export default function Transparency() {
                     </p>
                     <ul>
                         <li><strong>Independent Weighting:</strong> We prioritize diversity of sources over volume. Multiple reports from a single source are dampening to prevent manipulation.</li>
-                        <li><strong>Thresholds:</strong> A single report is a "Pre-Signal" (unverified observation). It becomes a confirmed "Signal" only when corroboration thresholds are met.</li>
+                        <li><strong>Thresholds:</strong> A single report is a "Pre-Signal" (unreviewed observation). It becomes a community-supported "Signal" only when corroboration thresholds are met.</li>
                         <li><strong>Automated Abuse Detection:</strong> Velocity limits and heuristic analysis protect the ecosystem from spam or coordinated vandalism.</li>
                     </ul>
 
@@ -67,7 +82,7 @@ export default function Transparency() {
                     <ul>
                         <li><strong>Use Responsibly:</strong> Do not use this platform to target, harass, or defame specific businesses or individuals.</li>
                         <li><strong>Report Honestly:</strong> Submit observations only when you genuinely suspect a physical anomaly.</li>
-                        <li><strong>No Vigilantism:</strong> If you find a device, <strong>do not remove it yourself</strong>. Notify store management or local law enforcement. Tampering with evidence can hinder investigations.</li>
+                        <li><strong>No Vigilantism:</strong> If you find a device, <strong>do not remove it yourself</strong>. Notify store management or local law enforcement. Tampering with evidence can hinder official inquiries.</li>
                     </ul>
                 </section>
 
@@ -122,7 +137,7 @@ export default function Transparency() {
                         <dd>A geographic radius where the frequency of recent Reports exceeds the standard deviation for that region.</dd>
 
                         <dt>User-Submitted</dt>
-                        <dd>Data provided by community members. It is not externally verified by platform operators unless explicitly stated.</dd>
+                        <dd>Data provided by community members. It is not externally reviewed by platform operators unless explicitly stated.</dd>
 
                         <dt>Time Relevance</dt>
                         <dd>The concept that the validity of a risk signal decreases as time passes without corroboration.</dd>

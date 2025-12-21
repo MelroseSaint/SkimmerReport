@@ -1,6 +1,7 @@
 import type { Report } from '../domain/types';
 import type { AutomationLog, ValidationResult, DuplicateCheckResult, EmailNotificationData } from '../domain/automation';
-import { InMemoryReportRepository } from '../infrastructure/InMemoryReportRepository';
+import { AdminInstantReportRepository } from '../infrastructure/AdminInstantReportRepository';
+
 
 interface DailySummaryData {
     date: string;
@@ -11,7 +12,8 @@ interface DailySummaryData {
 }
 
 export class ReportAutomationService {
-    private reportRepository = new InMemoryReportRepository();
+    private reportRepository = new AdminInstantReportRepository();
+
     private automationLogs: AutomationLog[] = [];
     private readonly EMAIL_RECIPIENT = 'Monroedoses@gmail.com';
     private readonly NO_REPLY_EMAIL = 'no-reply@skimmer-report.vercel.app';
@@ -25,7 +27,7 @@ export class ReportAutomationService {
     // Main automation entry point
     async processNewReport(report: Report): Promise<void> {
         const logId = this.generateLogId();
-        
+
         try {
             await this.logAutomation({
                 id: logId,
@@ -67,9 +69,9 @@ export class ReportAutomationService {
                 return;
             }
 
-            // Step 3: Confirm report and send real-time notification
-            await this.updateReportStatus(report.report_id, 'Confirmed');
-            await this.sendConfirmedEmailNotification(report);
+            // Step 3: Corroborate report and send real-time notification
+            await this.updateReportStatus(report.report_id, 'Community Supported');
+            await this.sendCorroboratedEmailNotification(report);
 
         } catch (error) {
             await this.handleError(report.report_id, error);
@@ -83,8 +85,8 @@ export class ReportAutomationService {
             errors.push('report_id is required');
         }
 
-        if (!report.location || 
-            typeof report.location.latitude !== 'number' || 
+        if (!report.location ||
+            typeof report.location.latitude !== 'number' ||
             typeof report.location.longitude !== 'number') {
             errors.push('Valid location with latitude and longitude is required');
         }
@@ -108,19 +110,20 @@ export class ReportAutomationService {
             center: report.location,
             radius: 100
         };
-        const existingReports = await this.reportRepository.getReports(filter);
-        
+        const existingReports = await this.reportRepository.getAll(filter);
+
+
         // Check for reports with same merchant within 24 hours
         const reportTime = new Date(report.timestamp);
-        
+
         for (const existingReport of existingReports) {
             if (existingReport.report_id === report.report_id) continue;
-            
+
             const existingTime = new Date(existingReport.timestamp);
             const timeDiff = Math.abs(reportTime.getTime() - existingTime.getTime());
             const hoursDiff = timeDiff / (1000 * 60 * 60);
 
-            if (hoursDiff <= 24 && 
+            if (hoursDiff <= 24 &&
                 existingReport.merchant.toLowerCase() === report.merchant.toLowerCase()) {
                 return {
                     isDuplicate: true,
@@ -132,21 +135,22 @@ export class ReportAutomationService {
         return { isDuplicate: false };
     }
 
-    private async updateReportStatus(report_id: string, status: 'Confirmed' | 'Rejected' | 'Error', reason?: string): Promise<void> {
+    private async updateReportStatus(report_id: string, status: 'Community Supported' | 'Rejected' | 'Error', reason?: string): Promise<void> {
         try {
-            const reports = await this.reportRepository.getReports();
-            const reportIndex = reports.findIndex(r => r.report_id === report_id);
-            
-            if (reportIndex !== -1) {
+            const reports = await this.reportRepository.getAll();
+            const report = reports.find(r => r.report_id === report_id);
+
+            if (report) {
                 const updatedReport = {
-                    ...reports[reportIndex],
+                    ...report,
                     status,
                     reason,
                     lastEvaluatedAt: new Date().toISOString()
                 };
-                
-                await this.reportRepository.updateReport(report_id, updatedReport);
-                
+
+                await this.reportRepository.save(updatedReport);
+
+
                 await this.logAutomation({
                     id: this.generateLogId(),
                     report_id,
@@ -169,13 +173,13 @@ export class ReportAutomationService {
         }
     }
 
-    private async sendConfirmedEmailNotification(report: Report): Promise<void> {
+    private async sendCorroboratedEmailNotification(report: Report): Promise<void> {
         try {
             const emailData: EmailNotificationData = {
                 to: this.EMAIL_RECIPIENT,
                 from: this.NO_REPLY_EMAIL,
-                subject: `Skimmer Report Confirmed – ${report.report_id}`,
-                body: this.generateConfirmedEmailBody(report),
+                subject: `Skimmer Report Corroborated – ${report.report_id}`,
+                body: this.generateCorroboratedEmailBody(report),
                 report_id: report.report_id
             };
 
@@ -199,24 +203,24 @@ export class ReportAutomationService {
                 timestamp: new Date().toISOString(),
                 error: error instanceof Error ? error.message : 'Unknown error'
             });
-            
+
             // Set report status to Error and trigger error handling
             await this.updateReportStatus(report.report_id, 'Error', `Email notification failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
             await this.handleError(report.report_id, error);
         }
     }
 
-    private generateConfirmedEmailBody(report: Report): string {
+    private generateCorroboratedEmailBody(report: Report): string {
         return `Hello,
 
-A new skimmer report has been confirmed on SkimmerWatch.
+A new skimmer report has been corroborated on SkimmerWatch.
 
 Report Details:
 - Report ID: ${report.report_id}
 - Location: ${report.location.latitude}, ${report.location.longitude}
 - Merchant: ${report.merchant}
 - Timestamp: ${report.timestamp}
-- Status: Confirmed
+- Status: Community Supported
 
 View Report: https://skimmer-report.vercel.app/reports/${report.report_id}
 
@@ -262,7 +266,7 @@ SkimmerWatch Automation`;
         tomorrow.setHours(23, 59, 0, 0);
 
         const msUntilDaily = tomorrow.getTime() - now.getTime();
-        
+
         this.dailySummaryTimer = setTimeout(() => {
             this.sendDailySummary();
             // Schedule next day's summary
@@ -275,7 +279,7 @@ SkimmerWatch Automation`;
         try {
             const today = new Date().toISOString().split('T')[0];
             const summaryData = await this.generateDailySummaryData(today);
-            
+
             const emailData: EmailNotificationData = {
                 to: this.EMAIL_RECIPIENT,
                 from: this.NO_REPLY_EMAIL,
@@ -308,13 +312,14 @@ SkimmerWatch Automation`;
     }
 
     private async generateDailySummaryData(date: string): Promise<DailySummaryData> {
-        const allReports = await this.reportRepository.getReports();
-        const todayReports = allReports.filter(report => 
+        const allReports = await this.reportRepository.getAll();
+
+        const todayReports = allReports.filter(report =>
             report.timestamp.split('T')[0] === date
         );
 
-        const confirmedReports = todayReports.filter(report => report.status === 'Confirmed');
-        const unconfirmedReports = todayReports.filter(report => 
+        const confirmedReports = todayReports.filter(report => report.status === 'Community Supported');
+        const unconfirmedReports = todayReports.filter(report =>
             report.status === 'Rejected' || report.status === 'Under Review' || report.status === 'Error'
         );
 
@@ -370,21 +375,21 @@ SkimmerWatch Automation`;
         emailActivity: AutomationLog[];
         errors: AutomationLog[];
     } {
-        const confirmedReports = this.automationLogs.filter(log => 
-            log.action === 'status_updated' && log.details.includes('Confirmed')
+        const confirmedReports = this.automationLogs.filter(log =>
+            log.action === 'status_updated' && log.details.includes('Community Supported')
         );
-        
-        const unconfirmedReports = this.automationLogs.filter(log => 
+
+        const unconfirmedReports = this.automationLogs.filter(log =>
             (log.action === 'status_updated' && log.details.includes('Rejected')) ||
             (log.action === 'duplicate_detected') ||
             (log.action === 'validation_completed' && log.status === 'failure')
         );
-        
-        const emailActivity = this.automationLogs.filter(log => 
+
+        const emailActivity = this.automationLogs.filter(log =>
             log.action === 'email_sent' || log.action === 'daily_summary_sent'
         );
-        
-        const errors = this.automationLogs.filter(log => 
+
+        const errors = this.automationLogs.filter(log =>
             log.status === 'failure' || log.action === 'error_occurred'
         );
 
@@ -398,30 +403,30 @@ SkimmerWatch Automation`;
 
     async exportAutomationLogs(): Promise<string> {
         const sections = this.getAutomationLogSections();
-        
+
         let exportText = `SkimmerWatch Automation Log Export\n`;
         exportText += `Generated: ${new Date().toISOString()}\n\n`;
-        
+
         exportText += `=== CONFIRMED REPORTS (${sections.confirmedReports.length}) ===\n`;
         sections.confirmedReports.forEach(log => {
             exportText += `[${log.timestamp}] ${log.report_id}: ${log.details}\n`;
         });
-        
+
         exportText += `\n=== UNCONFIRMED REPORTS (${sections.unconfirmedReports.length}) ===\n`;
         sections.unconfirmedReports.forEach(log => {
             exportText += `[${log.timestamp}] ${log.report_id}: ${log.details}\n`;
         });
-        
+
         exportText += `\n=== EMAIL ACTIVITY (${sections.emailActivity.length}) ===\n`;
         sections.emailActivity.forEach(log => {
             exportText += `[${log.timestamp}] ${log.report_id}: ${log.details}\n`;
         });
-        
+
         exportText += `\n=== ERRORS (${sections.errors.length}) ===\n`;
         sections.errors.forEach(log => {
             exportText += `[${log.timestamp}] ${log.report_id}: ${log.details}${log.error ? ' | Error: ' + log.error : ''}\n`;
         });
-        
+
         return exportText;
     }
 

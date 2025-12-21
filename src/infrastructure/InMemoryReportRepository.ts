@@ -31,8 +31,8 @@ export class InMemoryReportRepository implements ReportRepository {
           })(r.location);
           if (rk !== key) return r;
           const next: Report = { ...r, confidenceScore: evalRes.score, lastEvaluatedAt: evalRes.evaluatedAt };
-          if (r.status !== 'Confirmed' && evalRes.confirm) {
-            next.status = 'Confirmed';
+          if (r.status !== 'Community Supported' && evalRes.confirm) {
+            next.status = 'Community Supported';
             next.confirmationReason = evalRes.reason;
           }
           return next;
